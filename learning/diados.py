@@ -1,1 +1,1 @@
-   print('gallomelapela')
+print('gallomelapela')
