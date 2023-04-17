@@ -1,17 +1,19 @@
 import sys
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
-
     QLineEdit,
     QMainWindow,
-
     QPushButton,
     QLabel,
     QGridLayout,
     QWidget,
 )
+
+class HelpButton(QPushButton):
+    def __init__(self, text, callback):
+        super().__init__(text)
+        self.clicked.connect(self.show_help)
 
 
 # Subclass QMainWindow to customize your application's main window
@@ -27,14 +29,15 @@ class MainWindow(QMainWindow):
         input_names = {
             0: "Variable t",
             1: "Gravedad (g)",
-            2:"Altura Inicial (h0)",
-            3:"Altura Final (hf)",
-            4:"Constante del Resorte (k)",
+            2: "Altura Inicial (h0)",
+            3: "Altura Final (hf)",
+            4: "Constante del Resorte (k)",
         }
         for n in range(5):
-            layout.addWidget(QLabel(f"ingresa valor {input_names[n]}"), n, 0)
-            layout.addWidget(QLineEdit(), n, 1)
-        layout.addWidget(action_button, 5, 0, 1, 2)
+            layout.addWidget(QLabel(f"ingresa valor {input_names[n]}"), n+1, 0)
+            layout.addWidget(QLineEdit(), n+1, 1)
+
+        layout.addWidget(action_button, 6, 0, 1, 2)
         widget = QWidget()
         widget.setLayout(layout)
 
