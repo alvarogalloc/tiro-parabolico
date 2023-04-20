@@ -34,8 +34,16 @@ class MainWindow(QMainWindow):
             4: "Constante del Resorte (k)",
         }
         for n in range(5):
-            layout.addWidget(QLabel(f"ingresa valor {input_names[n]}"), n+1, 0)
+            layout.addWidget(QLabel(f"Ingresa valor {input_names[n]}"), n+1, 0)
             layout.addWidget(QLineEdit(), n+1, 1)
+            
+        output_names = {
+            0: "Angulo (θ)",
+            1: "Compresión del resorte (Xc)"
+        }
+        for m in range (2):
+            layout.addWidget(QLabel(f"Ingresa valor {output_names[m]}"), m+1, 3)
+            layout.addWidget(QLineEdit(), m+1, 4)
 
         layout.addWidget(action_button, 6, 0, 1, 2)
         widget = QWidget()
