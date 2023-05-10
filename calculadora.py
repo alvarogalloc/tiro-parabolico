@@ -60,9 +60,18 @@ class MainWindow(QtWidgets.QMainWindow):
             1: "Compresión del resorte (Xc)",
             2: "Velocidad inicial (Vo)"
         }
+        reultado_angulo = "hola"
+        resultado_resorte = "hola"
+        resultado_velocidad = "hola"
+        resultados = {
+            0: reultado_angulo,
+            1: resultado_resorte,
+            2: resultado_velocidad,
+        }
         for m in range (3):
             layout.addWidget(QLabel(f"{output_names[m]}"), m+1, 3)
-            layout.addWidget(QLineEdit(), m+1, 4)
+            layout.addWidget(QLabel(f"{resultados[m]}"), m+1, 4)
+        
 
         check = QCheckBox()
         layout.addWidget(check, 8,0)
@@ -83,7 +92,7 @@ class MainWindow(QtWidgets.QMainWindow):
         boton_ayuda.clicked.connect(self.abrir_ventana)        
         layout.addWidget(boton_ayuda, 0, 0)
     def abrir_ventana(self):
-            text = "En la primer columna de datos tendras que introdcir los volores de entrada que indica cada uno y del lado derecho salgran los resultados. Para empezar a calcular presiona el boton de calcular. Para quitar todos los valores en resetear. Presiona Auto para hacer los calculos Automaticamente"
+            text = "En la primer columna de datos tendras que introducir los valores de entrada que indica cada uno y del lado derecho saldran los resultados. Para empezar a calcular presiona el boton de calcular. Para quitar todos los valores en resetear. Presiona Auto para hacer los calculos Automaticamente"
             self.abrir_ventana = NewWindow(text)
             self.abrir_ventana.show()
 
