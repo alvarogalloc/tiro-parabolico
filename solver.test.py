@@ -9,8 +9,8 @@ final_height = 0
 solver = Solver(
     varT=vart,
     gravity=gravity,
-    initial_height=initial_height,
-    final_height=final_height,
+    h0=initial_height,
+    hf=final_height,
 )
 print(f"vart: {vart}")
 print(f"gravity: {gravity}")

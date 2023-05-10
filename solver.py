@@ -5,12 +5,19 @@ import math
 
 
 class Solver:
+    varT: float
+    gravity: float
+    h0: float
+    hf: float
+    used_angle: float
+    L: float
+
     def __init__(
         self,
         varT: float,
         gravity: float,
-        initial_height: float,
-        final_height: float,
+        h0: float,
+        hf: float,
         # spring_constant: float,
         # mass: float,
     ) -> None:
@@ -18,13 +25,12 @@ class Solver:
         # if given negative gravity,
         # change it to positive
         self.gravity = abs(gravity)
-        self.initial_height = initial_height
-        self.final_height = final_height
+        self.h0 = h0
+        self.hf = hf
 
         # not needed for now
         # self.spring_constant = spring_constant
         # self.mass = mass
-        self.used_angle = None
 
         # precompute L
         self.L = self._computeL()
@@ -39,11 +45,8 @@ class Solver:
         for angle in range(90):
             solution = (self.L ** 2 * self.gravity) / (
                 2
-                * math.cos(angle) ** 2
-                * (
-                    (self.final_height - self.initial_height)
-                    - self.L * math.tan(angle)
-                )
+                * math.cos(math.radians(angle)) ** 2
+                * ((self.hf - self.h0) - self.L * math.tan(math.radians(angle)))
             )
             if solution != math.nan:
                 break
@@ -51,7 +54,6 @@ class Solver:
 
         self.used_angle = angle
         return abs(solution)
-
 
     def angle(self):
         if self.used_angle is None:
@@ -62,4 +64,4 @@ class Solver:
     ## calculate the angle and the spring compression
     def spring_compression(self):
         # spring cannt be compressed more than 1 metre
-        return 
+        return
