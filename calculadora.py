@@ -13,18 +13,22 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import (
     QFont,
 )
-from PyQt6 import QtWidgets
+from PyQt6 import (
+    QtWidgets,
+)
 
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QtWidgets.QMainWindow):
+        
     def __init__(self):
         super().__init__()
-
+        
+    
         self.setWindowTitle("Widgets App")
-
+        self.line_edit = [None] # crea una lista vacía para despues rellanarla con los valores de entrada
+    
         layout = QGridLayout()
-
         ingresa_dato = QLabel("Valores de Entrada", self)
         salida_dato = QLabel("Valores de Salida", self)
         ingresa_dato.setFont(QFont("Arial", 16))
@@ -41,10 +45,18 @@ class MainWindow(QtWidgets.QMainWindow):
             4: "Constante del Resorte (k)",
             5: "Masa del Balon (m)",
         }
+        
+    
+
         for n in range(6):
             layout.addWidget(QLabel(f"{input_names[n]}"), n + 1, 0)
-            layout.addWidget(QLineEdit(), n + 1, 1)
+            widget = QLineEdit() # crea un widget QLineEdit
+            layout.addWidget(widget, n + 1, 1) # agrega el widget al layout
+            self.line_edit.append(widget) # añade el widget a la lista
+            widget.editingFinished.connect(lambda w=widget, n=n: self.imprimir_texto(n, w)) #Es lo que hace que se actialize cada que cambias de qlineedit
 
+    
+        
         output_names = {
             0: "Angulo (θ)",
             1: "Compresión del resorte (Xc)",
@@ -79,7 +91,14 @@ class MainWindow(QtWidgets.QMainWindow):
         boton_ayuda = QPushButton("Ayuda", self)
         boton_ayuda.clicked.connect(self.abrir_ventana)
         layout.addWidget(boton_ayuda, 0, 0)
-
+        
+    #Esta es la funcion que hace que se impriman los valores 
+    def imprimir_texto(self, n, widget):
+        self.line_edit = ["variabel_t", "gravedad", "altura_inicial", "altura_final", "constante", "masa"]
+        text = widget.text()
+        print(f"{n}: {self.line_edit[n]} - {text}")
+    
+    #Abre la ventana de ayuda
     def abrir_ventana(self):
         text = """\
                 En la primer columna de datos tendras que introducir los\
