@@ -42,11 +42,12 @@ class MainWindow(QtWidgets.QMainWindow):
     valores_solver: Dict[str, float] = {}
     ventana_de_ayuda: NewWindow
     solver: Solver
+    line_inputs: List[QLineEdit] = []
 
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Widgets App")
+        self.setWindowTitle("Capicalc")
         # crea una lista vacía para despues rellanarla con los valores de entrada
         layout = QGridLayout()
         ingresa_dato = QLabel("Valores de Entrada", self)
@@ -60,9 +61,9 @@ class MainWindow(QtWidgets.QMainWindow):
         action_button.clicked.connect(self.calcular)
         valores_solver_names = [
             "Variable t",
-            "Gravedad (g)",
-            "Altura Inicial (h0)",
-            "Altura Final (hf)",
+            "Gravedad (g m/s^2)",
+            "Altura Inicial (h0 metros)",
+            "Altura Final (hf metros)",
             # "Constante del Resorte (k)",
             # "Masa del Balon (m)",
         ]
@@ -80,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
             grid_row += 1
             layout.addWidget(QLabel(f"{element}"), grid_row, 0)
             widget = QLineEdit()  # crea un widget QLineEdit
+            self.line_inputs.append(widget)
             widget.setValidator(QDoubleValidator())  # solo aceptar numeros
             widget.textEdited.connect(
                 lambda w=widget, el=element: cambiar_valor_solver(w, el)
@@ -101,6 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
         check.setText("Auto")
 
         restart_button = QPushButton("Resetear")
+        restart_button.clicked.connect(lambda : self.reset())
         layout.addWidget(restart_button, 7, 0)
 
         layout.addWidget(action_button, 7, 1, 1, 2)
@@ -113,6 +116,9 @@ class MainWindow(QtWidgets.QMainWindow):
         boton_ayuda.clicked.connect(self.abrir_ventana_de_ayuda)
         layout.addWidget(boton_ayuda, 0, 0)
 
+    def reset(self):
+        for input in self.line_inputs:
+            input.setText("")
     # Abre la ventana de ayuda
     def abrir_ventana_de_ayuda(self):
         text = """En la primer columna de datos tendras que introducir
