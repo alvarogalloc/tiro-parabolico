@@ -74,7 +74,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
             
             self.valores_solver[el] = float(text)
-            print(self.valores_solver)
 
         grid_row = 0
         for element in valores_solver_names:
