@@ -3,7 +3,6 @@
 # TODO, might reorganize all values in a structure (dataclass)
 import math
 
-
 class Solver:
     varT: float
     gravity: float

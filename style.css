@@ -6,5 +6,10 @@ QPushButton#SubmitButton {
     border-radius: 12px;
     border-color: black;
     border-width: 2px;
-    box-shadow: 0px 10px rgb(83, 179, 83);
+    /* box-shadow: 0px 10px rgb(83, 179, 83); */
 }
+
+QPushButton#SubmitButton:disabled {
+    background-color: #ff1020;
+}
+

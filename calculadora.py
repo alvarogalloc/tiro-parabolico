@@ -1,49 +1,18 @@
-import sys  
-
-from PyQt6.QtGui import QColor
-from typing import Dict, List, Union
+from typing import Dict, List
 from solver import Solver
 import math
 
+
 from PyQt6.QtWidgets import (
     QApplication,
-    QDialog,
     QLineEdit,
-    QMainWindow,
     QPushButton,
     QLabel,
-    QGraphicsDropShadowEffect,
     QGridLayout,
-    QVBoxLayout,
     QWidget,
     QCheckBox,
-    QButtonGroup
 )
 from pathlib import Path
-
-class SubmitButton(QPushButton):
-    def __init__(self):
-        super().__init__("START")
-        self.setObjectName('SubmitButton')
-        self.setGraphicsEffect(self.getshadow())
-        self.setFixedSize(100, 25)
-        self.pressed.connect(self.onpressed)
-        self.released.connect(self.onrelease)
-    
-    def getshadow(self):
-        shadow = QGraphicsDropShadowEffect()
-        # Set the color of the shadow
-        shadow.setColor(QColor(83, 179, 83, 255))
-        # Set the offset of the shadow
-        shadow.setOffset(0, 3)
-        return shadow
-    
-    def onpressed(self):
-        self.setGraphicsEffect(None)
-        
-    def onrelease(self):
-        self.setGraphicsEffect(self.getshadow())
-        
 
 from PyQt6.QtGui import (
     QDoubleValidator,
@@ -52,6 +21,8 @@ from PyQt6.QtGui import (
 from PyQt6 import (
     QtWidgets,
 )
+        
+from submitbutton import SubmitButton
 
 
 class NewWindow(QtWidgets.QMainWindow):
@@ -87,8 +58,8 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(ingresa_dato, 0, 1)
         layout.addWidget(salida_dato, 0, 4)
 
-        action_button = QPushButton("Calcular")
-        action_button.clicked.connect(self.calcular)
+        self.action_button = SubmitButton()
+        self.action_button.clicked.connect(self.calcular)
         valores_solver_names = [
             "Variable t",
             "Gravedad (g m/s^2)",
@@ -98,6 +69,12 @@ class MainWindow(QtWidgets.QMainWindow):
             # "Masa del Balon (m)",
         ]
 
+        def puede_calcular() -> bool:
+            # regresa true si todos los valores ya fueron ingresados
+            n_valores_necesitados = len(valores_solver_names)
+            n_valores_dados = len(self.valores_solver)
+            return n_valores_dados == n_valores_necesitados
+
         def cambiar_valor_solver(text, el):
             #if text is empty, remove the key from the Dict
             if not text:
@@ -105,6 +82,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
             
             self.valores_solver[el] = float(text)
+            if puede_calcular():
+                self.action_button.setDisabled(False)
+            else:
+                self.action_button.setDisabled(True)
 
         grid_row = 0
         for element in valores_solver_names:
@@ -136,7 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
         restart_button.clicked.connect(lambda : self.reset())
         layout.addWidget(restart_button, 7, 0)
 
-        layout.addWidget(action_button, 7, 1, 1, 2)
+        layout.addWidget(self.action_button, 7, 1, 1, 2)
         widget = QWidget()
         widget.setLayout(layout)
 
@@ -162,14 +143,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ventana_de_ayuda.show()
 
     def calcular(self):
-        if len(self.valores_solver) < 4:
-            dlg = QDialog(self)
-            dlg.setWindowTitle("Faltan Datos!")
-            dlg.setMinimumSize(400, 200)
-            QLabel(
-                "Necesitas poner todos los datos!", dlg)
-            dlg.exec()
-        else:
+        if len(self.valores_solver) > 4:
             values = list(self.valores_solver.values())
             self.solver = Solver(values[0], values[1], values[2], values[3])
             self.widget_velocidad_inicial.setText(str(math.sqrt(self.solver._computeVsquared())))
