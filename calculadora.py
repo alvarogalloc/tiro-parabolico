@@ -2,6 +2,7 @@ from typing import Dict, List
 from solver import Solver
 import math
 
+from ventana_de_ayuda import VentanaDeAyuda
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -24,24 +25,10 @@ from PyQt6 import (
         
 from submitbutton import SubmitButton
 
-
-class NewWindow(QtWidgets.QMainWindow):
-    def __init__(self, text):
-        super().__init__()
-
-        label = QtWidgets.QLabel(text, self)
-        label.setWordWrap(True)
-        label.setFont(QFont("Arial", 16))
-
-        self.setCentralWidget(label)
-        self.resize(400, 200)
-        label.setMinimumSize(400, 200)
-
-
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QtWidgets.QMainWindow):
     valores_solver: Dict[str, float] = {}
-    ventana_de_ayuda: NewWindow
+    ventana_de_ayuda: VentanaDeAyuda
     solver: Solver
     line_inputs: List[QLineEdit] = []
 
@@ -65,8 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
             "Gravedad (g m/s^2)",
             "Altura Inicial (h0 metros)",
             "Altura Final (hf metros)",
-            # "Constante del Resorte (k)",
-            # "Masa del Balon (m)",
+            "Constante del Resorte (k)",
+            "Masa del Balon (m)",
         ]
 
         def puede_calcular() -> bool:
@@ -101,15 +88,15 @@ class MainWindow(QtWidgets.QMainWindow):
             )  # Es lo que hace que se actialize cada que cambias de qlineedit
             layout.addWidget(widget, grid_row, 1)  # agrega el widget al layout
 
-        # output_names = [
-        #     # "Angulo (θ)",
-        #     # "Compresión del resorte (Xc)",
-        #     "Velocidad inicial (Vo)",
-        # ]
-        # for m in range(3):
-        layout.addWidget(QLabel("Velocidad inicial (Vo)"), 1, 3)
-        self.widget_velocidad_inicial = QLabel("")
-        layout.addWidget(self.widget_velocidad_inicial, 1, 4)
+        output_names = [
+            "Angulo (θ)",
+            "Compresión del resorte (Xc)",
+        ]
+
+        for m in range(len(output_names)):
+            layout.addWidget(QLabel(output_names[m]), m + 1, 3)
+            self.widget_velocidad_inicial = QLabel("")
+            layout.addWidget(self.widget_velocidad_inicial, m + 1, 4)
 
         check = QCheckBox()
         layout.addWidget(check, 8, 0)
@@ -126,24 +113,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 
         boton_ayuda = QPushButton("Ayuda", self)
-        boton_ayuda.clicked.connect(self.abrir_ventana_de_ayuda)
+        self.ventana_de_ayuda = VentanaDeAyuda()
+        boton_ayuda.clicked.connect(self.ventana_de_ayuda.show)
         layout.addWidget(boton_ayuda, 0, 0)
 
 
     def reset(self):
         for input in self.line_inputs:
             input.setText("")
-    # Abre la ventana de ayuda
-    def abrir_ventana_de_ayuda(self):
-        text = """En la primer columna de datos tendras que introducir
-        los valores de entrada que indica cada uno y del lado derecho saldran
-        los resultados. Para empezar a calcular presiona el boton de calcular.
-        Para quitar todos los valores en resetear.
-        Presiona Auto para hacer los calculos Automaticamente"""
-        text = text.replace("\n", "").replace("  ", "")
-        self.ventana_de_ayuda = NewWindow(text)
-        self.ventana_de_ayuda.show()
-
     def calcular(self):
         if len(self.valores_solver) > 4:
             values = list(self.valores_solver.values())
