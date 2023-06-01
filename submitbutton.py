@@ -7,21 +7,22 @@ class SubmitButton(QPushButton):
         super().__init__("START")
         self.setObjectName('SubmitButton')
         self.setDisabled(False)
-        self.setGraphicsEffect(self.getshadow())
-        self.setFixedSize(100, 25)
+        # self.setGraphicsEffect(self.getshadow())
+        # self.setFixedSize(100, 25)
         self.pressed.connect(self.onpressed)
         self.released.connect(self.onrelease)
     
     def getshadow(self):
         shadow = QGraphicsDropShadowEffect()
-        # Set the color of the shadow
-        shadow.setColor(QColor(83, 179, 83, 255))
-        # Set the offset of the shadow
-        shadow.setOffset(0, 3)
+        # # Set the color of the shadow
+        # green = QColor(83, 179, 83, 255)
+        # shadow.setColor(green)
         return shadow
     
     def onpressed(self):
-        self.setGraphicsEffect(QGraphicsDropShadowEffect())
+        # self.setGraphicsEffect(QGraphicsDropShadowEffect())
+        return
         
     def onrelease(self):
-        self.setGraphicsEffect(self.getshadow())
+        # self.setGraphicsEffect(self.getshadow())
+        return

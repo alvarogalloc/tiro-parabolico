@@ -93,7 +93,9 @@ class MainWindow(QtWidgets.QMainWindow):
             layout.addWidget(QLabel(f"{element}"), grid_row, 0)
             widget = QLineEdit()  # crea un widget QLineEdit
             self.line_inputs.append(widget)
-            widget.setValidator(QDoubleValidator())  # solo aceptar numeros
+            validator = QDoubleValidator()
+            validator.setNotation(QDoubleValidator.Notation.StandardNotation)
+            widget.setValidator(validator)  # solo aceptar numeros
             widget.textEdited.connect(
                 lambda w=widget, el=element: cambiar_valor_solver(w, el)
             )  # Es lo que hace que se actialize cada que cambias de qlineedit

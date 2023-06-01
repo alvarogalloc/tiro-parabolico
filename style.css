@@ -1,15 +1,33 @@
 
+QMainWindow {
+  background-color: #0A192F;
+}
+* {
+  color: #F5F7FA;
+  font-size: 20px;
+}
+QPushButton {
+  background-color: #1C2B4F;
+}
+QLineEdit {
+  background-color:#A8B2D1;
+  border-color: #323F4F;
+  outline-color:#323F4F;
+  color:#0A192F;
+  padding: 5px 0px;
+}
 
 QPushButton#SubmitButton {
-    background-color: #12a704;
     border-style: outset;
     border-radius: 12px;
-    border-color: black;
     border-width: 2px;
+    padding:5px;
+    background-color: #20BF55;
+    border-color: #1C2B4F;
     /* box-shadow: 0px 10px rgb(83, 179, 83); */
 }
 
 QPushButton#SubmitButton:disabled {
-    background-color: #ff1020;
+    background-color: #A8B2D1;
 }
 
