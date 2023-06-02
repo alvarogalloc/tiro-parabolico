@@ -1,9 +1,9 @@
+# python standard library
 from typing import Dict, List
-from solver import Solver
+from pathlib import Path
 import math
 
-from ventana_de_ayuda import VentanaDeAyuda
-
+# from Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QLineEdit,
@@ -12,21 +12,20 @@ from PyQt6.QtWidgets import (
     QGridLayout,
     QWidget,
     QCheckBox,
+    QMainWindow
 )
-from pathlib import Path
-
 from PyQt6.QtGui import (
     QDoubleValidator,
     QFont,
 )
-from PyQt6 import (
-    QtWidgets,
-)
-        
+
+# our modules
+from solver import Solver
+from ventana_de_ayuda import VentanaDeAyuda
 from submitbutton import SubmitButton
 
 # Subclass QMainWindow to customize your application's main window
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QMainWindow):
     valores_solver: Dict[str, float] = {}
     ventana_de_ayuda: VentanaDeAyuda
     solver: Solver
