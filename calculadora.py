@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
     ventana_de_ayuda: VentanaDeAyuda
     solver: Solver
     line_inputs: List[QLineEdit] = []
+    action_button: SubmitButton
 
     def __init__(self):
         super().__init__()
