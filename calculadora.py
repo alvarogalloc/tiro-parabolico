@@ -1,53 +1,65 @@
-# python standard library
-from typing import Dict, List
+# Librerias de python
 from pathlib import Path
-import math
+from typing import List
 
-# from Qt
-from PyQt6.QtWidgets import (
-    QApplication,
-    QLineEdit,
-    QPushButton,
-    QLabel,
-    QGridLayout,
-    QWidget,
-    QCheckBox,
-    QMainWindow
-)
+# De Qt
 from PyQt6.QtGui import (
     QDoubleValidator,
     QFont,
 )
 
-# our modules
-from solver import Solver
-from ventana_de_ayuda import VentanaDeAyuda
-from submitbutton import SubmitButton
+from PyQt6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QGridLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPushButton,
+    QWidget,
+)
 
-# Subclass QMainWindow to customize your application's main window
-class MainWindow(QMainWindow):
-    valores_solver: Dict[str, float] = {}
+# Nuestros Módulos
+from solver import Solver
+from submitbutton import BotonCalcular
+from ventana_de_ayuda import VentanaDeAyuda
+
+
+class VentanaPrincipal(QMainWindow):
+    # Miembros de la clase
     ventana_de_ayuda: VentanaDeAyuda
     solver: Solver
-    line_inputs: List[QLineEdit] = []
-    action_button: SubmitButton
+    entradas: List[QLineEdit] = []
+    salidas: List[QLabel] = []
+    boton_calcular: BotonCalcular
+    n_inputs_dados: int = 0
 
     def __init__(self):
+        # Es como llamar a QMainWindow.__init__()
+        # inicializa los miembros que heredamos de esa clase
         super().__init__()
 
         self.setWindowTitle("Capicalc")
         # crea una lista vacía para despues rellanarla con los valores de entrada
         layout = QGridLayout()
-        ingresa_dato = QLabel("Valores de Entrada", self)
-        salida_dato = QLabel("Valores de Salida", self)
-        ingresa_dato.setFont(QFont("Arial", 16))
-        salida_dato.setFont(QFont("Arial", 16))
-        layout.addWidget(ingresa_dato, 0, 1)
-        layout.addWidget(salida_dato, 0, 4)
+        label_entrada = QLabel("Valores de Entrada", self)
+        label_salida = QLabel("Valores de Salida", self)
+        label_entrada.setFont(QFont("Arial", 16))
+        label_salida.setFont(QFont("Arial", 16))
 
-        self.action_button = SubmitButton()
-        self.action_button.clicked.connect(self.calcular)
-        valores_solver_names = [
+        # nuestro layout va asi
+
+        # |---|---|---|---|---|
+        # |L_E|   |   |   |L_S|
+        # |   |   |   |   |   |
+        # |---|---|---|---|---|
+        layout.addWidget(label_entrada, 0, 1)
+        layout.addWidget(label_salida, 0, 4)
+
+        self.boton_calcular = BotonCalcular()
+        self.boton_calcular.clicked.connect(self.calcular)
+
+        entrada_nombres = [
             "Variable t",
             "Gravedad (g m/s^2)",
             "Altura Inicial (h0 metros)",
@@ -56,37 +68,26 @@ class MainWindow(QMainWindow):
             "Masa del Balon (m)",
         ]
 
-        def puede_calcular() -> bool:
-            # regresa true si todos los valores ya fueron ingresados
-            n_valores_necesitados = len(valores_solver_names)
-            n_valores_dados = len(self.valores_solver)
-            return n_valores_dados == n_valores_necesitados
-
-        def cambiar_valor_solver(text, el):
-            #if text is empty, remove the key from the Dict
-            if not text:
-                del self.valores_solver[el]
-                return
-            
-            self.valores_solver[el] = float(text)
-            if puede_calcular():
-                self.action_button.setDisabled(False)
-            else:
-                self.action_button.setDisabled(True)
+        def actualizar_entrada() -> None:
+            self.n_inputs_dados = 0
+            for i in self.entradas:
+                if i.text():
+                    self.n_inputs_dados += 1
+            self.boton_calcular.setDisabled(not self.puede_calcular())
 
         grid_row = 0
-        for element in valores_solver_names:
+        for element in entrada_nombres:
             grid_row += 1
             layout.addWidget(QLabel(f"{element}"), grid_row, 0)
-            widget = QLineEdit()  # crea un widget QLineEdit
-            self.line_inputs.append(widget)
-            validator = QDoubleValidator()
-            validator.setNotation(QDoubleValidator.Notation.StandardNotation)
-            widget.setValidator(validator)  # solo aceptar numeros
-            widget.textEdited.connect(
-                lambda w=widget, el=element: cambiar_valor_solver(w, el)
+            entrada = QLineEdit()  # crea un widget QLineEdit
+            self.entradas.append(entrada)
+            validador = QDoubleValidator()
+            validador.setNotation(QDoubleValidator.Notation.StandardNotation)
+            entrada.setValidator(validador)  # solo aceptar numeros
+            entrada.textEdited.connect(
+                actualizar_entrada
             )  # Es lo que hace que se actialize cada que cambias de qlineedit
-            layout.addWidget(widget, grid_row, 1)  # agrega el widget al layout
+            layout.addWidget(entrada, grid_row, 1)  # agrega el widget al layout
 
         output_names = [
             "Angulo (θ)",
@@ -95,45 +96,58 @@ class MainWindow(QMainWindow):
 
         for m in range(len(output_names)):
             layout.addWidget(QLabel(output_names[m]), m + 1, 3)
-            self.widget_velocidad_inicial = QLabel("")
-            layout.addWidget(self.widget_velocidad_inicial, m + 1, 4)
+            salida = QLabel()
+            self.salidas.append(salida)
+            layout.addWidget(salida, m + 1, 4)
 
         check = QCheckBox()
         layout.addWidget(check, 8, 0)
         check.setText("Auto")
 
-        restart_button = QPushButton("Resetear")
-        restart_button.clicked.connect(lambda : self.reset())
-        layout.addWidget(restart_button, 7, 0)
+        boton_reset = QPushButton("Resetear")
+        boton_reset.clicked.connect(lambda: self.reset())
+        layout.addWidget(boton_reset, 7, 0)
 
-        layout.addWidget(self.action_button, 7, 1, 1, 2)
-        widget = QWidget()
-        widget.setLayout(layout)
+        layout.addWidget(self.boton_calcular, 7, 1, 1, 2)
+        entrada = QWidget()
+        entrada.setLayout(layout)
 
-        self.setCentralWidget(widget)
+        self.setCentralWidget(entrada)
 
         boton_ayuda = QPushButton("Ayuda", self)
         self.ventana_de_ayuda = VentanaDeAyuda()
         boton_ayuda.clicked.connect(self.ventana_de_ayuda.show)
         layout.addWidget(boton_ayuda, 0, 0)
 
+    def puede_calcular(self) -> bool:
+        # Si el numero de datos ingresados es el mismo que los necesitados
+        return self.n_inputs_dados == 6
 
     def reset(self):
-        for input in self.line_inputs:
-            input.setText("")
+        for salida in self.entradas:
+            salida.setText("")
+        for salida in self.salidas:
+            salida.setText("")
+
     def calcular(self):
-        if len(self.valores_solver) > 4:
-            values = list(self.valores_solver.values())
-            self.solver = Solver(values[0], values[1], values[2], values[3])
-            self.widget_velocidad_inicial.setText(str(math.sqrt(self.solver._computeVsquared())))
+        self.solver = Solver(
+            float(self.entradas[0].text()),
+            float(self.entradas[1].text()),
+            float(self.entradas[2].text()),
+            float(self.entradas[3].text()),
+            float(self.entradas[4].text()),
+            float(self.entradas[5].text()),
+        )
+        # Calcula los valores de salidas y ponerlos en los labels
+        self.salidas[0].setText(str(self.solver.angle()))
+        self.salidas[1].setText(str(self.solver.spring_compression()))
 
-    # Set the central widget of the Window. Widget will expand
-    # to take up all the space in the window by default.
-    #
+
 app = QApplication([])
-app.setStyleSheet(Path('style.css').read_text())
+# estilos
+app.setStyleSheet(Path("style.css").read_text())
 
-window = MainWindow()
+window = VentanaPrincipal()
 window.show()
 
 app.exec()

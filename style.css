@@ -17,7 +17,7 @@ QLineEdit {
   padding: 5px 0px;
 }
 
-QPushButton#SubmitButton {
+QPushButton#BotonCalcular {
     border-style: outset;
     border-radius: 12px;
     border-width: 2px;
@@ -27,7 +27,7 @@ QPushButton#SubmitButton {
     /* box-shadow: 0px 10px rgb(83, 179, 83); */
 }
 
-QPushButton#SubmitButton:disabled {
+QPushButton#BotonCalcular:disabled {
     background-color: #A8B2D1;
 }
 

@@ -8,7 +8,10 @@ class Solver:
     gravity: float
     h0: float
     hf: float
-    used_angle: float
+    used_angle: float = 0
+    spring_constant: float
+    mass: float
+
     L: float
 
     def __init__(
@@ -17,8 +20,8 @@ class Solver:
         gravity: float,
         h0: float,
         hf: float,
-        # spring_constant: float,
-        # mass: float,
+        spring_constant: float,
+        mass: float,
     ) -> None:
         self.varT = varT
         # if given negative gravity,
@@ -28,8 +31,8 @@ class Solver:
         self.hf = hf
 
         # not needed for now
-        # self.spring_constant = spring_constant
-        # self.mass = mass
+        self.spring_constant = spring_constant
+        self.mass = mass
 
         # precompute L
         self.L = self._computeL()
@@ -63,4 +66,4 @@ class Solver:
     ## calculate the angle and the spring compression
     def spring_compression(self):
         # spring cannt be compressed more than 1 metre
-        return
+        return 1.3

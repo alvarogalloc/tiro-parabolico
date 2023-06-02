@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QGraphicsDropShadowEffect, QPushButton
 
 
-class SubmitButton(QPushButton):
+class BotonCalcular(QPushButton):
     def __init__(self):
-        super().__init__("START")
-        self.setObjectName('SubmitButton')
+        super().__init__("CALCULAR")
+        self.setObjectName('BotonCalcular')
         self.setDisabled(True)
         # self.setGraphicsEffect(self.getshadow())
         # self.setFixedSize(100, 25)
