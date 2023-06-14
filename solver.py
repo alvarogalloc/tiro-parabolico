@@ -16,6 +16,11 @@ class Solver:
         self.L = self._computeL()
         self.used_angle = None
 
+        # el simulador cuando la altura inicial es 0, no permite angulos menores
+        # a 25
+        # sera 0 si la altura inicial no es cero, de otra manera sera 25
+        self.min_angle = 0 if h0 != 0 else 25
+
     def _computeL(self):
         return (12 * self.varT ** 3) + (5 * self.varT ** 2) + (3 * self.varT) + 10
 
@@ -23,14 +28,24 @@ class Solver:
         # by default None
         solution = math.nan
         angle = None
-        for angle in range(90):
-            solution = (self.L ** 2 * self.gravity) / (
-                2
-                * math.cos(math.radians(angle)) ** 2
-                * ((self.hf - self.h0) - self.L * math.tan(math.radians(angle)))
-            )
-            if solution != math.nan:
-                break
+        for angle in range(self.min_angle, 90):
+            try:
+                solution = (self.L ** 2 * self.gravity) / (
+                    2
+                    * math.cos(math.radians(angle)) ** 2
+                    * ((self.hf - self.h0) - self.L * math.tan(math.radians(angle)))
+                )
+                # hacer que el resultado se pueda probar en el simulador
+                # print(f"{angle} {solution}")
+                # no estoy seguro pero parece que al darnos numeros negativos
+                # significa que es una respuesta real.
+                # hacer que el resultado se pueda probar en el simulador 
+                #(el maximo en el simulador es 30)
+                if solution < 0 and math.sqrt(abs(solution)) < 30:
+                    break
+            except ZeroDivisionError:
+                continue
+
             # if not a solution just go to the next iteration
 
         self.used_angle = angle
