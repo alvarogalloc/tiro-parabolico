@@ -6,8 +6,8 @@ from typing import List
 from PyQt6.QtGui import (
     QDoubleValidator,
     QFont,
+    QPixmap,
 )
-
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QWidget,
 )
@@ -22,12 +23,10 @@ from PyQt6.QtWidgets import (
 # Nuestros Módulos
 from solver import Solver
 from submitbutton import BotonCalcular
-from ventana_de_ayuda import VentanaDeAyuda
 
 
 class VentanaPrincipal(QMainWindow):
     # Miembros de la clase
-    ventana_de_ayuda: VentanaDeAyuda
     solver: Solver
     entradas: List[QLineEdit] = []
     salidas: List[QLabel] = []
@@ -39,6 +38,7 @@ class VentanaPrincipal(QMainWindow):
         # Es como llamar a QMainWindow.__init__()
         # inicializa los miembros que heredamos de esa clase
         super().__init__()
+        self.setMaximumWidth(1024)
 
         self.setWindowTitle("Capicalc")
         # crea una lista vacía para despues rellanarla con los valores de entrada
@@ -55,7 +55,7 @@ class VentanaPrincipal(QMainWindow):
         # |   |   |   |   |   |
         # |---|---|---|---|---|
         layout.addWidget(label_entrada, 0, 1)
-        layout.addWidget(label_salida, 0, 4)
+        layout.addWidget(label_salida, 0, 3)
 
         self.boton_calcular = BotonCalcular()
         self.boton_calcular.clicked.connect(self.calcular)
@@ -83,6 +83,7 @@ class VentanaPrincipal(QMainWindow):
             grid_row += 1
             layout.addWidget(QLabel(f"{element}"), grid_row, 0)
             entrada = QLineEdit()  # crea un widget QLineEdit
+            entrada.setMaximumWidth(200)
             self.entradas.append(entrada)
             validador = QDoubleValidator()
             if (
@@ -107,10 +108,10 @@ class VentanaPrincipal(QMainWindow):
         ]
 
         for m in range(len(output_names)):
-            layout.addWidget(QLabel(output_names[m]), m + 1, 3)
+            layout.addWidget(QLabel(output_names[m]), m + 1, 2)
             salida = QLabel()
             self.salidas.append(salida)
-            layout.addWidget(salida, m + 1, 4)
+            layout.addWidget(salida, m + 1, 3)
 
         self.checkbox = QCheckBox()
         layout.addWidget(self.checkbox, 8, 0)
@@ -120,16 +121,40 @@ class VentanaPrincipal(QMainWindow):
         boton_reset.clicked.connect(lambda: self.reset())
         layout.addWidget(boton_reset, 7, 0)
 
-        layout.addWidget(self.boton_calcular, 7, 1, 1, 2)
+        layout.addWidget(self.boton_calcular, 7, 1)
         entrada = QWidget()
         entrada.setLayout(layout)
 
         self.setCentralWidget(entrada)
 
         boton_ayuda = QPushButton("Ayuda", self)
-        self.ventana_de_ayuda = VentanaDeAyuda()
-        boton_ayuda.clicked.connect(self.ventana_de_ayuda.show)
+        boton_ayuda.clicked.connect(self.mostrar_ayuda)
         layout.addWidget(boton_ayuda, 0, 0)
+
+        image = QPixmap("res/logo.png").scaled(64*3,64*3)
+        image_label = QLabel(self)
+        image_label.setPixmap(image)
+        # image_label.setFixedSize(image.size())
+        # image_label.move(500, 500)
+        image_label.setMargin(50)
+        # layout.setColumnMinimumWidth(1, 200)
+        # layout.setColumnMinimumWidth(2, 200)
+        # layout.setColumnMinimumWidth(3, 200)
+        text_label = QLabel("CapyCalc\nby Altamira")
+        text_label.setObjectName("LogoText")
+        layout.addWidget(image_label, 2, 2, 4,3)
+        layout.addWidget(text_label, 3, 3)
+
+    def mostrar_ayuda(self):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Ayuda")
+        dlg.setText(
+            "En la primer columna de datos tendras que introducir los valores de entrada que indica cada uno y del lado derecho saldran los resultados. Para empezar a calcular presiona el boton de calcular. Para quitar todos los valores en resetear. Presiona Auto para hacer los calculos Automaticamente"
+        )
+        button = dlg.exec()
+
+        if button == QMessageBox.StandardButton.Ok:
+            print("OK!")
 
     def puede_calcular(self) -> bool:
         # Si el numero de datos ingresados es el mismo que los necesitados

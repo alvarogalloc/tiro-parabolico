@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import QMainWindow, QLabel
+from PyQt6.QtWidgets import QLabel, QMessageBox
 from PyQt6.QtGui import QFont
 
-class VentanaDeAyuda(QMainWindow):
+class VentanaDeAyuda(QMessageBox):
     def __init__(self):
         super().__init__()
         text = """En la primer columna de datos tendras que introducir
