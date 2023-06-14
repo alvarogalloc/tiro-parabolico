@@ -3,39 +3,18 @@
 # TODO, might reorganize all values in a structure (dataclass)
 import math
 
+
 class Solver:
-    varT: float
-    gravity: float
-    h0: float
-    hf: float
-    used_angle: float = 0
-    spring_constant: float
-    mass: float
-
-    L: float
-
-    def __init__(
-        self,
-        varT: float,
-        gravity: float,
-        h0: float,
-        hf: float,
-        spring_constant: float,
-        mass: float,
-    ) -> None:
+    def __init__(self, varT, gravity, h0, hf, spring_constant, mass):
         self.varT = varT
-        # if given negative gravity,
-        # change it to positive
-        self.gravity = abs(gravity)
+        self.gravity = abs(gravity)  # Cambio el valor negativo de la gravedad a positivo
         self.h0 = h0
         self.hf = hf
-
-        # not needed for now
         self.spring_constant = spring_constant
         self.mass = mass
-
         # precompute L
         self.L = self._computeL()
+        self.used_angle = None
 
     def _computeL(self):
         return (12 * self.varT ** 3) + (5 * self.varT ** 2) + (3 * self.varT) + 10
@@ -43,7 +22,7 @@ class Solver:
     def _computeVsquared(self):
         # by default None
         solution = math.nan
-        angle = 0
+        angle = None
         for angle in range(90):
             solution = (self.L ** 2 * self.gravity) / (
                 2
@@ -65,5 +44,13 @@ class Solver:
     ## TODO: we need the new constraints to
     ## calculate the angle and the spring compression
     def spring_compression(self):
+        solution = self._computeVsquared()
         # spring cannt be compressed more than 1 metre
-        return 1.3
+        Xc = math.sqrt(self.mass * solution / self.spring_constant)
+        return Xc
+    
+    def velocidad_inicial(self):
+        solution = self._computeVsquared()
+        return math.sqrt(solution)
+    
+        

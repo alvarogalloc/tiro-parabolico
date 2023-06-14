@@ -1,6 +1,7 @@
 # Librerias de python
 from pathlib import Path
 from typing import List
+import sys
 
 # De Qt
 from PyQt6.QtGui import (
@@ -67,6 +68,7 @@ class VentanaPrincipal(QMainWindow):
             "Constante del Resorte (k)",
             "Masa del Balon (m)",
         ]
+        
 
         def actualizar_entrada() -> None:
             self.n_inputs_dados = 0
@@ -92,6 +94,8 @@ class VentanaPrincipal(QMainWindow):
         output_names = [
             "Angulo (θ)",
             "Compresión del resorte (Xc)",
+            "Velocidad inicial (Vo)",
+            "Distancia del objetivo"
         ]
 
         for m in range(len(output_names)):
@@ -130,18 +134,20 @@ class VentanaPrincipal(QMainWindow):
             salida.setText("")
 
     def calcular(self):
-        self.solver = Solver(
-            float(self.entradas[0].text()),
-            float(self.entradas[1].text()),
-            float(self.entradas[2].text()),
-            float(self.entradas[3].text()),
-            float(self.entradas[4].text()),
-            float(self.entradas[5].text()),
-        )
+        varT = float(self.entradas[0].text())
+        gravity = float(self.entradas[1].text())
+        h0 = float(self.entradas[2].text())
+        hf = float(self.entradas[3].text())
+        spring_constant = float(self.entradas[4].text())
+        mass = float(self.entradas[5].text())
+
+        self.solver = Solver(varT, gravity, h0, hf, spring_constant, mass)
         # Calcula los valores de salidas y ponerlos en los labels
         self.salidas[0].setText(str(self.solver.angle()))
         self.salidas[1].setText(str(self.solver.spring_compression()))
-
+        self.salidas[2].setText(str(self.solver.velocidad_inicial()))
+        self.salidas[3].setText(str(self.solver._computeL()))
+        
 
 app = QApplication([])
 # estilos
