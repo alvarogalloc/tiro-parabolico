@@ -7,7 +7,8 @@ import math
 class Solver:
     def __init__(self, varT, gravity, h0, hf, spring_constant, mass):
         self.varT = varT
-        self.gravity = abs(gravity)  # Cambio el valor negativo de la gravedad a positivo
+        # Cambio el valor negativo de la gravedad a positivo
+        self.gravity = abs(gravity)
         self.h0 = h0
         self.hf = hf
         self.spring_constant = spring_constant
@@ -39,8 +40,8 @@ class Solver:
                 # print(f"{angle} {solution}")
                 # no estoy seguro pero parece que al darnos numeros negativos
                 # significa que es una respuesta real.
-                # hacer que el resultado se pueda probar en el simulador 
-                #(el maximo en el simulador es 30)
+                # hacer que el resultado se pueda probar en el simulador
+                # (el maximo en el simulador es 30)
                 if solution < 0:
                     break
             except ZeroDivisionError:
@@ -62,13 +63,11 @@ class Solver:
         solution = self._computeVsquared()
         # spring cannt be compressed more than 1 metre
         Xc = math.sqrt(self.mass * solution / self.spring_constant)
-        if Xc > 1: 
+        if Xc > 1:
             self.min_angle += 1
             Xc = self.spring_compression()
         return Xc
-    
+
     def velocidad_inicial(self):
         solution = self._computeVsquared()
         return math.sqrt(solution)
-    
-        

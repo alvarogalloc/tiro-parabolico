@@ -1,8 +1,6 @@
 # Librerias de python
-import math
 from pathlib import Path
 from typing import List
-import sys
 
 # De Qt
 from PyQt6.QtGui import (
@@ -35,6 +33,7 @@ class VentanaPrincipal(QMainWindow):
     salidas: List[QLabel] = []
     boton_calcular: BotonCalcular
     n_inputs_dados: int = 0
+    checkbox: QCheckBox
 
     def __init__(self):
         # Es como llamar a QMainWindow.__init__()
@@ -76,6 +75,8 @@ class VentanaPrincipal(QMainWindow):
                 if i.text():
                     self.n_inputs_dados += 1
             self.boton_calcular.setDisabled(not self.puede_calcular())
+            if self.checkbox.isChecked() and self.puede_calcular():
+                self.calcular()
 
         grid_row = 0
         for element in entrada_nombres:
@@ -84,6 +85,13 @@ class VentanaPrincipal(QMainWindow):
             entrada = QLineEdit()  # crea un widget QLineEdit
             self.entradas.append(entrada)
             validador = QDoubleValidator()
+            if (
+                element == "Constante del Resorte (k)"
+                or element == "Masa del Balon (m)"
+                or element == "Variable t"
+            ):
+                validador.setBottom(0.00001)
+
             validador.setNotation(QDoubleValidator.Notation.StandardNotation)
             entrada.setValidator(validador)  # solo aceptar numeros
             entrada.textEdited.connect(
@@ -104,9 +112,9 @@ class VentanaPrincipal(QMainWindow):
             self.salidas.append(salida)
             layout.addWidget(salida, m + 1, 4)
 
-        check = QCheckBox()
-        layout.addWidget(check, 8, 0)
-        check.setText("Auto")
+        self.checkbox = QCheckBox()
+        layout.addWidget(self.checkbox, 8, 0)
+        self.checkbox.setText("Auto")
 
         boton_reset = QPushButton("Resetear")
         boton_reset.clicked.connect(lambda: self.reset())
@@ -135,24 +143,26 @@ class VentanaPrincipal(QMainWindow):
         self.boton_calcular.setDisabled(True)
 
     def calcular(self):
-        varT = float(self.entradas[0].text())
-        gravity = float(self.entradas[1].text())
-        h0 = float(self.entradas[2].text())
-        hf = float(self.entradas[3].text())
-        spring_constant = float(self.entradas[4].text())
-        mass = float(self.entradas[5].text())
+        try:
+            varT = float(self.entradas[0].text())
+            gravity = float(self.entradas[1].text())
+            h0 = float(self.entradas[2].text())
+            hf = float(self.entradas[3].text())
+            spring_constant = float(self.entradas[4].text())
+            mass = float(self.entradas[5].text())
+        # when incomplete input
+        except ValueError:
+            return
 
         self.solver = Solver(varT, gravity, h0, hf, spring_constant, mass)
         # Calcula los valores de salidas y ponerlos en los labels
         self.salidas[0].setText(str(self.solver.angle()))
-
 
         compresion = str(self.solver.spring_compression())
         if compresion == "nan":
             self.salidas[1].setText("El resorte es muy debil")
         else:
             self.salidas[1].setText(compresion)
-
 
         # disabled on line 97-98
         # self.salidas[2].setText(str(self.solver.velocidad_inicial()))
