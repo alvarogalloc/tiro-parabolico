@@ -69,3 +69,4 @@ class Solver:
         return math.sqrt(solution)
     
         
+         
