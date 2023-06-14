@@ -71,3 +71,5 @@ class Solver:
     def velocidad_inicial(self):
         solution = self._computeVsquared()
         return math.sqrt(solution)
+    
+        
