@@ -1,4 +1,5 @@
 # Librerias de python
+import os
 from pathlib import Path
 from typing import List
 
@@ -23,6 +24,8 @@ from PyQt6.QtWidgets import (
 # Nuestros Módulos
 from solver import Solver
 from submitbutton import BotonCalcular
+
+basedir = os.path.dirname(__file__)
 
 
 class VentanaPrincipal(QMainWindow):
@@ -131,7 +134,7 @@ class VentanaPrincipal(QMainWindow):
         boton_ayuda.clicked.connect(self.mostrar_ayuda)
         layout.addWidget(boton_ayuda, 0, 0)
 
-        image = QPixmap("res/logo.png").scaled(64*3,64*3)
+        image = QPixmap(os.path.join(basedir, "res", "logo.png")).scaled(64 * 3, 64 * 3)
         image_label = QLabel(self)
         image_label.setPixmap(image)
         # image_label.setFixedSize(image.size())
@@ -142,7 +145,7 @@ class VentanaPrincipal(QMainWindow):
         # layout.setColumnMinimumWidth(3, 200)
         text_label = QLabel("CapyCalc\nby Altamira")
         text_label.setObjectName("LogoText")
-        layout.addWidget(image_label, 2, 2, 4,3)
+        layout.addWidget(image_label, 2, 2, 4, 3)
         layout.addWidget(text_label, 3, 3)
 
     def mostrar_ayuda(self):
@@ -196,7 +199,7 @@ class VentanaPrincipal(QMainWindow):
 
 app = QApplication([])
 # estilos
-app.setStyleSheet(Path("style.css").read_text())
+app.setStyleSheet(Path(os.path.join(basedir, "style.css")).read_text())
 
 window = VentanaPrincipal()
 window.show()
