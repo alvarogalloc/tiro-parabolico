@@ -20,7 +20,7 @@ class Solver:
         # el simulador cuando la altura inicial es 0, no permite angulos menores
         # a 25
         # sera 0 si la altura inicial no es cero, de otra manera sera 25
-        self.min_angle = 0 if h0 != 0 else 1
+        self.min_angle = -25
 
     def _computeL(self):
         return (12 * self.varT ** 3) + (5 * self.varT ** 2) + (3 * self.varT) + 10

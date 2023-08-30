@@ -38,6 +38,6 @@ QLabel#LogoText {
   margin: 0 auto;
 }
 QPushButton#BotonCalcular:disabled {
-    background-color: #A8B2D1;
+  background-color: #A8B2D1;
 }
 
