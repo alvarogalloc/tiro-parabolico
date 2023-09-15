@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 
 # De Qt
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
     QDoubleValidator,
     QFont,
@@ -36,12 +37,14 @@ class VentanaPrincipal(QMainWindow):
     boton_calcular: BotonCalcular
     n_inputs_dados: int = 0
     checkbox: QCheckBox
-
+    
     def __init__(self):
         # Es como llamar a QMainWindow.__init__()
         # inicializa los miembros que heredamos de esa clase
         super().__init__()
-        self.setMaximumWidth(1024)
+        #maximiza la ventana a full screen y con ESC se cierra
+        self.setWindowState(Qt.WindowState.WindowFullScreen)
+        self.keyPressEvent = self.close_on_esc
 
         self.setWindowTitle("Capicalc")
         # crea una lista vacía para despues rellanarla con los valores de entrada
@@ -58,7 +61,7 @@ class VentanaPrincipal(QMainWindow):
         # |   |   |   |   |   |
         # |---|---|---|---|---|
         layout.addWidget(label_entrada, 0, 1)
-        layout.addWidget(label_salida, 0, 3)
+        layout.addWidget(label_salida, 0, 2)
 
         self.boton_calcular = BotonCalcular()
         self.boton_calcular.clicked.connect(self.calcular)
@@ -195,6 +198,10 @@ class VentanaPrincipal(QMainWindow):
         # disabled on line 97-98
         # self.salidas[2].setText(str(self.solver.velocidad_inicial()))
         # self.salidas[3].setText(str(self.solver._computeL()))
+    # Funcion para cerrar la ventana
+    def close_on_esc(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.close()
 
 
 app = QApplication([])
