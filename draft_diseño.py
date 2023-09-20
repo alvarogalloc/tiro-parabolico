@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QPushButton,
     QLineEdit,
+    QVBoxLayout,
 )
 
 basedir = os.path.dirname(__file__)
@@ -25,9 +26,10 @@ class VentanaPrincipal(QMainWindow):
 
         layout_principal = QGridLayout(central_widget)
         layout_principal.setColumnStretch(0, 1)
-        layout_principal.setColumnStretch(1, 1)
+        layout_principal.setColumnStretch(1, 2)
+        layout_principal.setColumnStretch(2, 3)
         lado_izquierdo = QGridLayout()
-        lado_derecho = QGridLayout()
+        lado_derecho = QVBoxLayout()
         
         boton_ayuda = QPushButton("Ayuda", self)
         boton_reset = QPushButton("Resetear")
@@ -49,11 +51,11 @@ class VentanaPrincipal(QMainWindow):
             "Obstaculo"
         ]
         
-        lado_izquierdo.addWidget(label_entrada, 0, 2)
+        layout_principal.addWidget(label_entrada, 0, 1)
         
-        lado_derecho.addWidget(label_salida, 0, 1)
+        layout_principal.addWidget(label_salida, 0,2)
         
-        lado_izquierdo.addWidget(boton_ayuda, 0, 0)
+        layout_principal.addWidget(boton_ayuda, 0, 0)
 
         lado_izquierdo.addWidget(self.checkbox, 9, 1)
         self.checkbox.setText("Auto")
@@ -62,9 +64,11 @@ class VentanaPrincipal(QMainWindow):
         
         lado_izquierdo.addWidget(boton_calcular, 8, 2)
 
-        layout_principal.addLayout(lado_izquierdo, 0, 0)
-        layout_principal.addLayout(lado_derecho, 0, 1)
-        
+        layout_principal.addLayout(lado_izquierdo, 1, 1)
+        layout_principal.addLayout(lado_derecho, 1, 2)
+        layout_principal.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_entrada.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_salida.setAlignment(Qt.AlignmentFlag.AlignCenter)
         grid_row = 0
         for element in entrada_nombres:
             grid_row += 1
@@ -74,9 +78,13 @@ class VentanaPrincipal(QMainWindow):
         
 
         for m in range(len(output_names)):
-            lado_derecho.addWidget(QLabel(output_names[m]), m + 1, 0)
-            salida = QLabel()
-            lado_derecho.addWidget(salida, m + 1, 1)
+            titulos = QLabel((output_names[m]))
+            lado_derecho.addWidget(titulos)
+            titulos.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            salida = QLabel("3.28929")
+            salida.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            lado_derecho.addWidget(salida)
+            
         
     def close_on_esc(self, event):
         if event.key() == Qt.Key.Key_Escape:
