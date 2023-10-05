@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 
 basedir = os.path.dirname(__file__)
 
+
 class VentanaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -29,14 +30,16 @@ class VentanaPrincipal(QMainWindow):
         layout_principal.setColumnStretch(2, 3)
         lado_izquierdo = QGridLayout()
         lado_derecho = QGridLayout()
-        
+        for layout in [lado_izquierdo, lado_derecho]:
+            layout.setContentsMargins(0,0,0,0)
+
         boton_ayuda = QPushButton("Ayuda")
         boton_reset = QPushButton("Resetear")
         boton_calcular = QPushButton("Calcular")
         self.checkbox = QCheckBox("Auto")
         label_entrada = QLabel("Valores de Entrada")
         label_salida = QLabel("Valores de Salida")
-        output_names = [
+        output_nombres = [
             "Ángulo (θ)",
             "Compresión del resorte (Xc)",
         ]
@@ -47,12 +50,12 @@ class VentanaPrincipal(QMainWindow):
             "Altura Final",
             "Altura Inicial",
             "Distancia Horizontal",
-            "Obstáculo"
+            # obstaculo es aparte
         ]
-        
+
         label_entrada.setObjectName("label_entrada")
         label_salida.setObjectName("label_salida")
-        
+
         layout_principal.addWidget(label_entrada, 0, 1)
         layout_principal.addWidget(label_salida, 0, 2)
         layout_principal.addWidget(boton_ayuda, 0, 0)
@@ -73,17 +76,35 @@ class VentanaPrincipal(QMainWindow):
             entrada = QLineEdit()
             lado_izquierdo.addWidget(entrada, grid_row, 2)
 
-        for m in range(len(output_names)):
-            titulos = QLabel(output_names[m])
+        # obstaculo en x y y
+        def hacer_input_obstaculo (): 
+            container_obstaculo = QWidget()
+            container_obstaculo_layout = QGridLayout()
+            container_obstaculo_layout.setContentsMargins(0, 0, 0, 0)
+            entrada_x = QLineEdit()
+            entrada_y = QLineEdit()
+            entrada_x.setPlaceholderText("x:")
+            entrada_y.setPlaceholderText("y:")
+            container_obstaculo_layout.addWidget(entrada_x, 0, 0)
+            container_obstaculo_layout.addWidget(entrada_y, 0, 1)
+            container_obstaculo.setLayout(container_obstaculo_layout)
+            return container_obstaculo
+            
+        lado_izquierdo.addWidget(QLabel("Obstáculo"), grid_row + 1, 1)
+        lado_izquierdo.addWidget(hacer_input_obstaculo(), grid_row + 1, 2)
+
+        for m in range(len(output_nombres)):
+            titulos = QLabel(output_nombres[m])
             lado_derecho.addWidget(titulos)
             titulos.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             salida = QLabel("3.28929")
             salida.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             lado_derecho.addWidget(salida)
-            
+
     def close_on_esc(self, event):
         if event.key() == Qt.Key.Key_Escape:
             self.close()
+
 
 if __name__ == "__main__":
     app = QApplication([])
