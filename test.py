@@ -21,22 +21,19 @@ class Solver:
     def _formuliniV(self):
         resultados = []
         for ang in range(self.min_ang, 90):
-            try:
-                denominator = (((self.hf - self.hi) - self.l * np.tan(np.radians(ang))) * (-2 * np.cos(np.radians(ang)) ** 2))
-                if denominator == 0 or denominator < 0:
-                    continue  # Salta divisiones por cero o negativas
-                solution = ((self.g * self.l ** 2) / denominator)
-                velocidad = np.sqrt(solution)
-                if solution > 0:
-                    self.used_ang = ang
-                    self.Xr = np.sqrt(self.m * solution / self.k)
-                    if self.Xr > 1:
-                        continue  # Salta soluciones donde self.Xr sea mayor que 1
-                    self.Xr = max(0, min(1, self.Xr))
-                    resultados.append([self.used_ang, self.Xr, velocidad])
-            except ZeroDivisionError:
-                continue
-    
+            denominator = (((self.hf - self.hi) - self.l * np.tan(np.radians(ang))) * (-2 * np.cos(np.radians(ang)) ** 2))
+            if denominator == 0 or denominator < 0:
+                continue  # Salta divisiones por cero o negativas
+            solution = ((self.g * self.l ** 2) / denominator)
+            velocidad = np.sqrt(solution)
+            if solution > 0:
+                self.used_ang = ang
+                self.Xr = np.sqrt(self.m * solution / self.k)
+                if self.Xr > 1:
+                    continue  # Salta soluciones donde self.Xr sea mayor que 1
+                self.Xr = max(0, min(1, self.Xr))
+                resultados.append([self.used_ang, self.Xr, velocidad])
+        
         return resultados
     def _posicion_pelota(self):
         posiciones = []  # Lista para almacenar las posiciones en función del tiempo
