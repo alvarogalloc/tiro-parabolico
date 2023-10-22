@@ -2,20 +2,20 @@ import numpy as np
 import json
 
 class Solver:
-    def __init__(self, config_file="test.json"):
-        # Carga la configuración desde el archivo JSON
-        with open(config_file, 'r') as file:
-            config_data = json.load(file)
-        
-        self.m = config_data["m"]
-        self.g = abs(config_data["g"])
-        self.l = config_data["l"]
-        self.hi = config_data["hi"]
-        self.hf = config_data["hf"]
-        self.k = config_data["k"]
+    
+    def __init__(self, valores):
+        self.valores_entrada = valores
+        self.m = self.valores_entrada[0]
+        self.g = self.valores_entrada[1]
+        self.k = self.valores_entrada[2]
+        self.hi = self.valores_entrada[3]
+        self.hf = self.valores_entrada[4]
+        self.l = self.valores_entrada[5]
+        self.coor_x = self.valores_entrada[6]
+        self.coor_y = self.valores_entrada[7]
         self.Xr = None
         self.used_ang = None
-        self.min_ang = 0
+        self.min_ang = -90
         self.resultados_formuliniV = self._formuliniV()
 
     def _formuliniV(self):
@@ -33,8 +33,9 @@ class Solver:
                     continue  # Salta soluciones donde self.Xr sea mayor que 1
                 self.Xr = max(0, min(1, self.Xr))
                 resultados.append([self.used_ang, self.Xr, velocidad])
-        
+
         return resultados
+
     def _posicion_pelota(self):
         posiciones = []  # Lista para almacenar las posiciones en función del tiempo
 
@@ -45,25 +46,31 @@ class Solver:
             velocidad_x = velocidad * np.cos(radianes)
             velocidad_y = velocidad * np.sin(radianes)
             tiempo_total = self.l / velocidad_x
+            Xr = resultado[1]
 
-        # Calcula la posición en incrementos de 0.05 segundos
+            # Calcula la posición en incrementos de 0.05 segundos
             tiempo = 0.0
+            obstaculo_encontrado = False
+
             while tiempo <= tiempo_total:
                 posicion_y = velocidad_y * tiempo + (-self.g * tiempo ** 2 / 2)
                 posicion_x = velocidad_x * tiempo
-                posiciones.append([angulo,[posicion_x, posicion_y]])
-                tiempo += 0.001
 
-        return posiciones
-   
+                # Verifica si la posición está dentro del rango del obstáculo
+                if (
+                    (self.coor_x - 0.5 <= posicion_x <= self.coor_x + 0.5) and
+                    (self.coor_y - 0.5 <= posicion_y <= self.coor_y + 0.5)
+                ):
+                    obstaculo_encontrado = True
+                    break  # Sale del bucle si la posición está dentro del rango del obstáculo
+
+                tiempo += 0.0001
+
+            if not obstaculo_encontrado:
+                posiciones.append([angulo,Xr])
+                break  # Sale del bucle si no se encontró coincidencia
+
+        return posiciones[0]
+
 
 # Ejemplo de uso
-
-solver = Solver()
-solutions_list = solver._posicion_pelota()
-solutions_list2 = solver._formuliniV()
-for resultados in solutions_list2:
-    print(resultados)
-# print("Posiciones:")
-# for posicion in solutions_list:
-#     print(posicion)

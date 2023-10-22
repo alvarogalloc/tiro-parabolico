@@ -6,7 +6,7 @@ from test import Solver  # Importa tu clase Solver desde el archivo correspondie
 solver = Solver()
 
 # Calcula los resultados y posiciones
-resultados = solver._formuliniV()
+resultados = solver._posicion_pelota()
 
 # Graficar las trayectorias para diferentes ángulos
 for resultado in resultados:
@@ -21,9 +21,18 @@ for resultado in resultados:
     # Calcular las posiciones en función del tiempo
     posicion_x = velocidad_x * tiempo
     posicion_y = velocidad_y * tiempo - (0.5 * solver.g * tiempo ** 2)
+    x_punto = 10  # Reemplaza con las coordenadas deseadas
+    y_punto = 10.3  # Reemplaza con las coordenadas deseadas
+    radio_punto = 0.5  # Tamaño del punto
+    area_punto = np.pi * (radio_punto**2)
+    # Agregar el punto con el tamaño especificado
+    plt.scatter(x_punto, y_punto, s=area_punto, c='red')
+    plt.plot(posicion_x, posicion_y, label=f'Ángulo: {angulo}°')
+    
+   
 
     # Graficar la trayectoria
-    plt.plot(posicion_x, posicion_y, label=f'Ángulo: {angulo}°')
+
 
 # Configurar el gráfico
 plt.xlabel('Posición en X (metros)')
