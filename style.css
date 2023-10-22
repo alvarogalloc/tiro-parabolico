@@ -55,3 +55,7 @@ QPushButton#BotonCalcular:disabled {
 #label_salida {
     font-size: 30px; /* Change this value to your desired font size */
 }
+#boton_ayuda{
+  background:transparent;
+  border: none;
+}

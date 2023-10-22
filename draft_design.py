@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-from PyQt6.QtCore import Qt
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt, QRegularExpression, QSize
 from PyQt6.QtWidgets import (
     QApplication,
     QGridLayout,
@@ -10,7 +11,10 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QPushButton,
     QLineEdit,
+    QVBoxLayout,
 )
+from PyQt6.QtGui import  QRegularExpressionValidator, QIcon, QAction
+
 
 from test import Solver
 
@@ -25,6 +29,8 @@ class VentanaPrincipal(QMainWindow):
         self.keyPressEvent = self.close_on_esc
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        svg_path = os.path.join(current_dir, 'res', 'ayuda.svg')
 
         layout_principal = QGridLayout(central_widget)
         layout_principal.setColumnStretch(0, 1)
@@ -36,12 +42,28 @@ class VentanaPrincipal(QMainWindow):
         for layout in [lado_izquierdo, lado_derecho]:
             layout.setContentsMargins(0,0,0,0)
 
-        boton_ayuda = QPushButton("Ayuda")
+        
+        boton_ayuda = QtWidgets.QToolButton()
+        boton_ayuda.setStyleSheet("background-color: transparent; border: none; margin-left: 40px; margin-right: 40px;")
+        boton_ayuda.setIconSize(QSize(40,40))
+        etiqueta_ayuda = QLabel("Ayuda")
+        etiqueta_ayuda.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        layout_boton_ayuda = QVBoxLayout()
+        layout_boton_ayuda.addWidget(boton_ayuda)
+        layout_boton_ayuda.addWidget(etiqueta_ayuda)
+        layout_boton_ayuda.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        layout_boton_ayuda.setContentsMargins(0, 0, 0, 0)
+        widget_boton_ayuda = QWidget()
+        widget_boton_ayuda.setLayout(layout_boton_ayuda)
+        boton_ayuda.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+
+        
         boton_reset = QPushButton("Resetear")
         boton_calcular = QPushButton("Calcular")
         self.checkbox = QCheckBox("Auto")
         label_entrada = QLabel("Valores de Entrada")
         label_salida = QLabel("Valores de Salida")
+        self.line_edits = []
         output_nombres = [
             "Ángulo (θ)",
             "Compresión del resorte (Xc)",
@@ -52,8 +74,16 @@ class VentanaPrincipal(QMainWindow):
             "Constante",
             "Altura Final",
             "Altura Inicial",
-            "Distancia Horizontal",
-            # obstaculo es aparte
+            "Distancia Horizontal"
+        ]
+        
+        placeholders = [
+            "Kilogramos",
+            "metros/segundos^2",
+            "Newton/metros",
+            "metros",
+            "metros",
+            "metros",
         ]
 
         label_entrada.setObjectName("label_entrada")
@@ -74,14 +104,24 @@ class VentanaPrincipal(QMainWindow):
         label_salida.setAlignment(Qt.AlignmentFlag.AlignCenter)
         grid_row = 0
         boton_calcular.clicked.connect(self.on_click_button)
-        self.line_edits = []
-
-        for element in entrada_nombres:
+        boton_reset.clicked.connect(self.resetear)
+        
+        self.checkbox.stateChanged.connect(self.calculo_auto)
+        
+        boton_ayuda.setDefaultAction(QAction(QIcon(svg_path), "Ayuda", self))
+        
+        for n in range(len(entrada_nombres)):
             grid_row += 1
-            lado_izquierdo.addWidget(QLabel(f"{element}"), grid_row, 1)
+            lado_izquierdo.addWidget(QLabel(f"{entrada_nombres[n]}"), grid_row, 1)
             entrada = QLineEdit()
             self.line_edits.append(entrada)
             lado_izquierdo.addWidget(entrada, grid_row, 2)
+            entrada.setPlaceholderText(placeholders[n])
+            decimal_regex = QRegularExpression(r"^\d*\.?\d*$")
+            decimal_validator = QRegularExpressionValidator(decimal_regex)
+            entrada.setValidator(decimal_validator)
+
+
 
         self.labels_salida = []
         self.salidas = []
@@ -97,6 +137,8 @@ class VentanaPrincipal(QMainWindow):
             entrada_y.setPlaceholderText("y:")
             container_obstaculo_layout.addWidget(entrada_x, 0, 0)
             container_obstaculo_layout.addWidget(entrada_y, 0, 1)
+            self.line_edits.append(entrada_x)
+            self.line_edits.append(entrada_y)
             container_obstaculo.setLayout(container_obstaculo_layout)
             return container_obstaculo
             
@@ -108,11 +150,14 @@ class VentanaPrincipal(QMainWindow):
             self.labels_salida.append(titulos)
             titulos.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             lado_derecho.addWidget(titulos)
-            salida = QLabel(self.salidas[m] if len(self.salidas) == 2 else '')
-            salida.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-            lado_derecho.addWidget(salida)
+            self.salida = QLabel()
+            self.salida.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            self.salidas.append(self.salida)
+            lado_derecho.addWidget(self.salida)
 
-        
+        for entrada in self.line_edits:
+                entrada.textChanged.connect(self.calculo_auto)
+                
     def obtener_valores(self):
         valores = []
         for lineEdit in self.line_edits:
@@ -126,13 +171,38 @@ class VentanaPrincipal(QMainWindow):
         return valores 
     
     def on_click_button(self):
-        valores = self.obtener_valores()
-        solucion = Solver(valores)._posicion_pelota()
-        print(solucion)
-        self.salidas = []
-        self.salidas.append(solucion[0]) # angulo
-        self.salidas.append(solucion[1]) # compresion
+        if all(lineEdit.text() for lineEdit in self.line_edits):
+            valores = self.obtener_valores()
+            try:
+                self.solucion = Solver(valores)._posicion_pelota()
+                for m in range(len(self.solucion)):
+                    self.salidas[m].setText(str(self.solucion[m]))
+            except IndexError:
+                self.mostrar_error_en_salida("Valores no válidos")
+        else:
+            print("Asegúrate de que todos los campos estén completos.")
+            
+    def mostrar_error_en_salida(self, mensaje):
+        for salida in self.salidas:
+            salida.setText(mensaje)
 
+    def mostrar_error_en_salida(self, mensaje):
+        for salida in self.salidas:
+            salida.setText(mensaje)
+
+            
+    def resetear(self):
+        for lineEdits in self.line_edits:
+            lineEdits.clear()
+        for salida in self.salidas:
+            salida.clear()
+        
+    def calculo_auto(self):
+        if all(lineEdit.text() for lineEdit in self.line_edits):
+            if self.checkbox.isChecked():
+                self.on_click_button()
+                           
+    
     def close_on_esc(self, event):
         if event.key() == Qt.Key.Key_Escape:
             self.close()
