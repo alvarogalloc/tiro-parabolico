@@ -1,12 +1,13 @@
 import numpy as np
 import json
 
+
 class Solver:
-    
     def __init__(self, valores):
         self.valores_entrada = valores
         self.m = self.valores_entrada[0]
-        self.g = self.valores_entrada[1]
+        # agarrar valor absoluto
+        self.g = np.abs(self.valores_entrada[1])
         self.k = self.valores_entrada[2]
         self.hi = self.valores_entrada[4]
         self.hf = self.valores_entrada[3]
@@ -21,10 +22,12 @@ class Solver:
     def _formuliniV(self):
         resultados = []
         for ang in range(self.min_ang, 90):
-            denominator = (((self.hf - self.hi) - self.l * np.tan(np.radians(ang))) * (-2 * np.cos(np.radians(ang)) ** 2))
+            denominator = ((self.hf - self.hi) - self.l * np.tan(np.radians(ang))) * (
+                -2 * np.cos(np.radians(ang)) ** 2
+            )
             if denominator == 0 or denominator < 0:
                 continue  # Salta divisiones por cero o negativas
-            solution = ((self.g * self.l ** 2) / denominator)
+            solution = (self.g * self.l ** 2) / denominator
             velocidad = np.sqrt(solution)
             if solution > 0:
                 self.used_ang = ang
@@ -57,9 +60,8 @@ class Solver:
                 posicion_x = velocidad_x * tiempo
 
                 # Verifica si la posición está dentro del rango del obstáculo
-                if (
-                    (self.coor_x - 0.5 <= posicion_x <= self.coor_x + 0.5) and
-                    (self.coor_y - 0.5 <= posicion_y <= self.coor_y + 0.5)
+                if (self.coor_x - 0.5 <= posicion_x <= self.coor_x + 0.5) and (
+                    self.coor_y - 0.5 <= posicion_y <= self.coor_y + 0.5
                 ):
                     obstaculo_encontrado = True
                     break  # Sale del bucle si la posición está dentro del rango del obstáculo
@@ -67,7 +69,8 @@ class Solver:
                 tiempo += 0.0001
 
             if not obstaculo_encontrado:
-                posiciones.append([angulo,Xr])
+                Xr = round(Xr, 3)
+                posiciones.append([angulo, Xr])
                 break  # Sale del bucle si no se encontró coincidencia
 
         return posiciones[0]

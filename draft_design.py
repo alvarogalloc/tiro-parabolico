@@ -13,13 +13,20 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QVBoxLayout,
 )
-from PyQt6.QtGui import  QRegularExpressionValidator, QIcon, QAction
+from PyQt6.QtGui import  QDoubleValidator, QRegularExpressionValidator, QIcon, QAction
 
 
 from test import Solver
 
 basedir = os.path.dirname(__file__)
 
+def restringir_input(widget, aceptar_negativos=False):
+    input_validator = QDoubleValidator()
+    input_validator.setNotation(QDoubleValidator.Notation.StandardNotation)
+    if not aceptar_negativos:
+        input_validator.setBottom(0)
+    widget.setValidator(input_validator)
+            
 
 class VentanaPrincipal(QMainWindow):
     def __init__(self):
@@ -109,6 +116,7 @@ class VentanaPrincipal(QMainWindow):
         self.checkbox.stateChanged.connect(self.calculo_auto)
         
         boton_ayuda.setDefaultAction(QAction(QIcon(svg_path), "Ayuda", self))
+
         
         for n in range(len(entrada_nombres)):
             grid_row += 1
@@ -117,11 +125,10 @@ class VentanaPrincipal(QMainWindow):
             self.line_edits.append(entrada)
             lado_izquierdo.addWidget(entrada, grid_row, 2)
             entrada.setPlaceholderText(placeholders[n])
-            decimal_regex = QRegularExpression(r"^\d*\.?\d*$")
-            decimal_validator = QRegularExpressionValidator(decimal_regex)
-            entrada.setValidator(decimal_validator)
-
-
+            if n not in [3,4]:
+                restringir_input(entrada)
+            else:
+                restringir_input(entrada, True)
 
         self.labels_salida = []
         self.salidas = []
@@ -135,6 +142,8 @@ class VentanaPrincipal(QMainWindow):
             entrada_y = QLineEdit()
             entrada_x.setPlaceholderText("x:")
             entrada_y.setPlaceholderText("y:")
+            restringir_input(entrada_x)
+            restringir_input(entrada_y, True)
             container_obstaculo_layout.addWidget(entrada_x, 0, 0)
             container_obstaculo_layout.addWidget(entrada_y, 0, 1)
             self.line_edits.append(entrada_x)
@@ -186,10 +195,6 @@ class VentanaPrincipal(QMainWindow):
         for salida in self.salidas:
             salida.setText(mensaje)
 
-    def mostrar_error_en_salida(self, mensaje):
-        for salida in self.salidas:
-            salida.setText(mensaje)
-
             
     def resetear(self):
         for lineEdits in self.line_edits:
@@ -201,6 +206,8 @@ class VentanaPrincipal(QMainWindow):
         if all(lineEdit.text() for lineEdit in self.line_edits):
             if self.checkbox.isChecked():
                 self.on_click_button()
+        else:
+            self.mostrar_error_en_salida("")
                            
     
     def close_on_esc(self, event):
