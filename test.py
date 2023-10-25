@@ -69,7 +69,8 @@ class Solver:
                 tiempo += 0.0001
 
             if not obstaculo_encontrado:
-                Xr = round(Xr, 3)
+                Xr = Xr * 100
+                Xr = round(Xr, 1)
                 posiciones.append([angulo, Xr])
                 break  # Sale del bucle si no se encontró coincidencia
 
