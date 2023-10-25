@@ -180,16 +180,18 @@ class VentanaPrincipal(QMainWindow):
         return valores 
     
     def on_click_button(self):
-        if all(lineEdit.text() for lineEdit in self.line_edits):
-            valores = self.obtener_valores()
-            try:
-                self.solucion = Solver(valores)._posicion_pelota()
-                self.salidas[0].setText(str(self.solucion[0]))
-                self.salidas[1].setText(f'{self.solucion[1]}%')
-            except IndexError:
-                self.mostrar_error_en_salida("Valores no válidos")
-        else:
-            print("Asegúrate de que todos los campos estén completos.")
+        if not all(lineEdit.text() for lineEdit in self.line_edits):
+            return
+        
+        valores = self.obtener_valores()
+        self.solucion = Solver(valores)._posicion_pelota()
+            
+        if len(self.solucion) != 2:
+            self.mostrar_error_en_salida("Valores no válidos")
+            return
+                    
+        self.salidas[0].setText(str(self.solucion[0]))
+        self.salidas[1].setText(f'{self.solucion[1]}%')
             
     def mostrar_error_en_salida(self, mensaje):
         for salida in self.salidas:
