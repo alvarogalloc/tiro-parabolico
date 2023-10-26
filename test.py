@@ -76,7 +76,7 @@ class Solver:
                 posiciones_y.append(posicion_y)
                 tiempo += 0.0001
 
-            if not obstaculo_encontrado:
+            if not obstaculo_encontrado and Xr > 0:
                 Xr = Xr * 100
                 Xr = round(Xr, 1)
                 posiciones.append([angulo, Xr])
