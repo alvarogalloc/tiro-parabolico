@@ -1,5 +1,6 @@
 import numpy as np
-import json
+import matplotlib.pyplot as plt
+import os
 
 
 class Solver:
@@ -17,9 +18,9 @@ class Solver:
         self.Xr = None
         self.used_ang = None
         self.min_ang = -90
-        self.resultados_formuliniV = self._formuliniV()
+        self.resultados_formulaV = self._formulaV()
 
-    def _formuliniV(self):
+    def _formulaV(self):
         resultados = []
         for ang in range(self.min_ang, 90):
             denominator = ((self.hf - self.hi) - self.l * np.tan(np.radians(ang))) * (
@@ -40,9 +41,12 @@ class Solver:
         return resultados
 
     def _posicion_pelota(self):
+        image_filename = "imagen.png"
+
+        
         posiciones = []  # Lista para almacenar las posiciones en función del tiempo
 
-        for resultado in self.resultados_formuliniV:
+        for resultado in self.resultados_formulaV:
             angulo = resultado[0]
             velocidad = resultado[2]
             radianes = angulo * np.pi / 180
@@ -50,7 +54,9 @@ class Solver:
             velocidad_y = velocidad * np.sin(radianes)
             tiempo_total = self.l / velocidad_x
             Xr = resultado[1]
-
+            
+            posiciones_x = []
+            posiciones_y = []
             # Calcula la posición en incrementos de 0.05 segundos
             tiempo = 0.0
             obstaculo_encontrado = False
@@ -64,17 +70,29 @@ class Solver:
                     self.coor_y - 0.5 <= posicion_y <= self.coor_y + 0.5
                 ):
                     obstaculo_encontrado = True
-                    break  # Sale del bucle si la posición está dentro del rango del obstáculo
-
+                    break
+                
+                posiciones_x.append(posicion_x)
+                posiciones_y.append(posicion_y)
                 tiempo += 0.0001
 
             if not obstaculo_encontrado:
                 Xr = Xr * 100
                 Xr = round(Xr, 1)
                 posiciones.append([angulo, Xr])
-                break  # Sale del bucle si no se encontró coincidencia
-
+            if not obstaculo_encontrado:
+                plt.plot(posiciones_x, posiciones_y)
+                plt.xlabel('Posición en X (metros)')
+                plt.ylabel('Posición en Y (metros)')
+                plt.title('')
+                # plt.legend()
+                plt.grid()
+                plt.axis('equal')
+                plt.savefig(image_filename)
+                break
+            
         return posiciones[0]
+   
 
-
+    # Mostrar el gráfico
 # Ejemplo de uso
