@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class Solver:
@@ -40,11 +40,25 @@ class Solver:
 
         return resultados
 
-    def _posicion_pelota(self):
-        image_filename = "imagen.png"
-
+    def create_plot_widget(self, posiciones_x, posiciones_y):
+        figure = plt.figure()
+        canvas = FigureCanvas(figure)
+        ax = figure.add_subplot(111)
+        ax.plot(posiciones_x, posiciones_y)
         
+        # ax.xlabel("Posición en X (metros)")
+        # ax.ylabel("Posición en Y (metros)")
+        # ax.title("")
+        ax.grid()
+        ax.axis("equal")
+        canvas.setStyleSheet("background-color:transparent;")
+        canvas.draw()
+        plt.close(figure)
+        return canvas
+
+    def _posicion_pelota(self):
         posiciones = []  # Lista para almacenar las posiciones en función del tiempo
+        widget_of_the_plot = None
 
         for resultado in self.resultados_formulaV:
             angulo = resultado[0]
@@ -54,7 +68,7 @@ class Solver:
             velocidad_y = velocidad * np.sin(radianes)
             tiempo_total = self.l / velocidad_x
             Xr = resultado[1]
-            
+
             posiciones_x = []
             posiciones_y = []
             # Calcula la posición en incrementos de 0.05 segundos
@@ -71,7 +85,7 @@ class Solver:
                 ):
                     obstaculo_encontrado = True
                     break
-                
+
                 posiciones_x.append(posicion_x)
                 posiciones_y.append(posicion_y)
                 tiempo += 0.0001
@@ -80,19 +94,17 @@ class Solver:
                 Xr = Xr * 100
                 Xr = round(Xr, 1)
                 posiciones.append([angulo, Xr])
-            if not obstaculo_encontrado:
-                plt.plot(posiciones_x, posiciones_y)
-                plt.xlabel('Posición en X (metros)')
-                plt.ylabel('Posición en Y (metros)')
-                plt.title('')
-                # plt.legend()
-                plt.grid()
-                plt.axis('equal')
-                plt.savefig(image_filename)
+                widget_of_the_plot = self.create_plot_widget(posiciones_x, posiciones_y)
                 break
-            
-        return posiciones[0]
-   
+
+        # que regrese un angulo y compresion funcional ademas de la grafica del disparo
+        return (
+            [posiciones[0][0], posiciones[0][1], widget_of_the_plot]
+            if posiciones
+            else []
+        )
 
     # Mostrar el gráfico
+
+
 # Ejemplo de uso
