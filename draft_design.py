@@ -53,7 +53,7 @@ class VentanaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Capicalc")
-        self.setWindowState(Qt.WindowState.WindowFullScreen)
+        # self.setWindowState(Qt.WindowState.WindowFullScreen)
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
         # current_dir = os.path.dirname(os.path.abspath(__file__))

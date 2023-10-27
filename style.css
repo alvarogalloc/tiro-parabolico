@@ -22,10 +22,9 @@ QLineEdit {
   background-color: #f3f3f3;
   color: #323f4f;
   border: 2px solid #323f4f;
-  /* padding: 10px 0ox; */
-  max-width: 250px;
-  max-height: 25px;
-  border-radius: 25px;
+  padding: 3px;
+  border-radius: 18px;
+  /* max-width: 250px; */
 }
 QLineEdit:focus {
   border-color: #8997ff;

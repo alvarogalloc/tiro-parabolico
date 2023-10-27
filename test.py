@@ -50,6 +50,7 @@ class Solver:
         # ax.ylabel("Posición en Y (metros)")
         # ax.title("")
         ax.grid()
+        ax.scatter(self.coor_x, self.coor_y, color="red", s=3, marker="o")
         ax.axis("equal")
         canvas.setStyleSheet("background-color:transparent;")
         canvas.draw()
