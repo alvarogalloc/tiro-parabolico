@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLineEdit,
 )
-from PyQt6.QtGui import QDoubleValidator, QIcon, QPixmap, QCursor
+from PyQt6.QtGui import QDoubleValidator, QIcon, QImage, QPixmap, QCursor
 
 
 from solver import Solver
@@ -48,15 +48,10 @@ class VentanaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Capicalc")
-        # self.setWindowState(Qt.WindowState.WindowFullScreen)
+        self.setWindowState(Qt.WindowState.WindowFullScreen)
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-        # add res/check_box_unchecked.svg
-        # add res/check_box_checked.svg to context
         layout_principal = QGridLayout(central_widget)
-        # padding de 150px en cada lado
-        # layout_principal.setContentsMargins(150, 0, 150, 0)
         layout_principal.setColumnStretch(0, 1)
         layout_principal.setColumnStretch(1, 1)
         lado_izquierdo = QGridLayout()
@@ -140,7 +135,9 @@ class VentanaPrincipal(QMainWindow):
             lado_izquierdo.addWidget(QLabel(f"{entrada_nombres[n]}"), grid_row, 1)
             entrada = QLineEdit()
             self.line_edits.append(entrada)
-            lado_izquierdo.addWidget(widget_con_ayuda(entrada, help_msgs[n]), grid_row, 2)
+            lado_izquierdo.addWidget(
+                widget_con_ayuda(entrada, help_msgs[n]), grid_row, 2
+            )
             entrada.setPlaceholderText(placeholders[n])
             if n not in [3, 4]:
                 restringir_input(entrada)
@@ -188,10 +185,27 @@ class VentanaPrincipal(QMainWindow):
             self.salida.setObjectName("salidas")
             titulos.setObjectName("titulos")
 
-        self.lado_derecho.addWidget(Solver.create_plot_widget(None, None, None, True))
+        self.lado_derecho.addWidget(Solver.hacer_grafica(None, None, None, True))
 
         for entrada in self.line_edits:
             entrada.textChanged.connect(self.calculo_auto)
+
+        container_footer = QWidget()
+        container_footer.setContentsMargins(0, 0, 0, 0)
+        logo_img = QLabel()
+        logo_img.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        container_footer.setLayout(QHBoxLayout())
+        container_footer.layout().setAlignment(Qt.AlignmentFlag.AlignLeft)
+        logo_img.setPixmap(QPixmap(str(Path(os.path.join(basedir, "res/logo.png")))))
+        copyright_msg = QLabel(
+            "Equipo Capicalc (Mateo Sanchez, Santiago Celis y Álvaro Gallo)"
+        )
+        copyright_msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        copyright_msg.setStyleSheet("font-size:10px")
+
+        container_footer.layout().addWidget(logo_img)
+        container_footer.layout().addWidget(copyright_msg)
+        layout_principal.addWidget(container_footer)
 
     def obtener_valores(self):
         valores = []
@@ -210,7 +224,7 @@ class VentanaPrincipal(QMainWindow):
             return
 
         valores = self.obtener_valores()
-        self.solucion = Solver(valores)._posicion_pelota()
+        self.solucion = Solver(valores).solucion()
         if len(self.solucion) == 3:
             self.salidas[0].setText(f"{self.solucion[0]}°")
             self.salidas[1].setText(f"{self.solucion[1]}%")
@@ -222,7 +236,7 @@ class VentanaPrincipal(QMainWindow):
         else:
             # aqui lo inverso: se quita la grafica y se pone el placeholder
             self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
-            self.lado_derecho.addWidget(Solver.create_plot_widget(None, None, None, True))
+            self.lado_derecho.addWidget(Solver.hacer_grafica(None, None, None, True))
             self.mostrar_error_en_salida("Valores no válidos")
 
     def mostrar_error_en_salida(self, mensaje):
@@ -235,7 +249,7 @@ class VentanaPrincipal(QMainWindow):
         for salida in self.salidas:
             salida.clear()
         self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
-        self.lado_derecho.addWidget(Solver.create_plot_widget(None, None, None, True))
+        self.lado_derecho.addWidget(Solver.hacer_grafica(None, None, None, True))
 
     def calculo_auto(self):
         if self.checkbox.isChecked():
@@ -250,7 +264,7 @@ class VentanaPrincipal(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
-    
+
     app.setStyleSheet(Path(os.path.join(basedir, "style.css")).read_text())
     window = VentanaPrincipal()
     window.show()
