@@ -1,7 +1,8 @@
 import os
 
 from pathlib import Path
-from PyQt6.QtCore import QLine, QSize, Qt
+from PyQt6 import QtCore
+from PyQt6.QtCore import QLine, QSize, Qt, QPoint
 from PyQt6.QtWidgets import (
     QApplication,
     QGridLayout,
@@ -10,13 +11,14 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
     QCheckBox,
+    QToolTip,
     QPushButton,
     QLineEdit,
 )
-from PyQt6.QtGui import QDoubleValidator, QIcon, QPixmap
+from PyQt6.QtGui import QDoubleValidator, QIcon, QPixmap, QCursor
 
 
-from test import Solver
+from solver import Solver
 
 basedir = os.path.dirname(__file__)
 
@@ -29,22 +31,15 @@ def restringir_input(widget, aceptar_negativos=False):
     widget.setValidator(input_validator)
 
 
-# hace un widget del tamaño que deberia tener la grafica para que no se mueva todo cuando exista una grafica
-def make_plot_placeholder() -> QWidget:
-    plot_placeholder = QWidget()
-    plot_placeholder.setFixedSize(320, 240)
-    return plot_placeholder
-
-
 def widget_con_ayuda(widget, help_msg):
     container = QWidget()
     layout = QHBoxLayout()
     layout.addWidget(widget)
     icon_label = QLabel()
     icon_help = QIcon(os.path.join(basedir, "res/ayuda.svg")).pixmap(QSize(24, 24))
-    icon_label.setToolTip(help_msg)
     icon_label.setPixmap(icon_help)
     layout.addWidget(icon_label)
+    icon_label.setToolTip(help_msg)
     container.setLayout(layout)
     return container
 
@@ -57,7 +52,8 @@ class VentanaPrincipal(QMainWindow):
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
         # current_dir = os.path.dirname(os.path.abspath(__file__))
-
+        # add res/check_box_unchecked.svg
+        # add res/check_box_checked.svg to context
         layout_principal = QGridLayout(central_widget)
         # padding de 150px en cada lado
         # layout_principal.setContentsMargins(150, 0, 150, 0)
@@ -75,6 +71,7 @@ class VentanaPrincipal(QMainWindow):
         boton_reset = QPushButton("Resetear")
         boton_calcular = QPushButton("Calcular")
         self.checkbox = QCheckBox("Auto")
+
         label_entrada = QLabel("Valores de Entrada")
         label_salida = QLabel("Valores de Salida")
         self.line_edits = []
@@ -98,6 +95,15 @@ class VentanaPrincipal(QMainWindow):
             "metros",
             "metros",
             "metros",
+        ]
+
+        help_msgs = [
+            "Masa del balón en kilogramos",
+            "Gravedad en metros/segundos^2",
+            "Que tan fuerte es el resorte en Newton/metros",
+            "Altura del objetivo en metros",
+            "Altura del cañon en metros",
+            "Distancia hacia el objetivo en metros",
         ]
 
         label_entrada.setObjectName("label_entrada")
@@ -134,7 +140,7 @@ class VentanaPrincipal(QMainWindow):
             lado_izquierdo.addWidget(QLabel(f"{entrada_nombres[n]}"), grid_row, 1)
             entrada = QLineEdit()
             self.line_edits.append(entrada)
-            lado_izquierdo.addWidget(widget_con_ayuda(entrada, ""), grid_row, 2)
+            lado_izquierdo.addWidget(widget_con_ayuda(entrada, help_msgs[n]), grid_row, 2)
             entrada.setPlaceholderText(placeholders[n])
             if n not in [3, 4]:
                 restringir_input(entrada)
@@ -164,7 +170,7 @@ class VentanaPrincipal(QMainWindow):
             container_obstaculo.setFixedWidth(250)
             return widget_con_ayuda(
                 container_obstaculo,
-                "Coordenadas de un Obstaculo en la trayectoria (x,y)",
+                "Coordenadas de un obstáculo\nen la trayectoria (x,y)",
             )
 
         lado_izquierdo.addWidget(QLabel("Obstáculo"), grid_row + 1, 1)
@@ -182,7 +188,7 @@ class VentanaPrincipal(QMainWindow):
             self.salida.setObjectName("salidas")
             titulos.setObjectName("titulos")
 
-        self.lado_derecho.addWidget(make_plot_placeholder())
+        self.lado_derecho.addWidget(Solver.create_plot_widget(None, None, None, True))
 
         for entrada in self.line_edits:
             entrada.textChanged.connect(self.calculo_auto)
@@ -209,7 +215,6 @@ class VentanaPrincipal(QMainWindow):
             self.salidas[0].setText(f"{self.solucion[0]}°")
             self.salidas[1].setText(f"{self.solucion[1]}%")
             # hacer del mismo tamaño del plot_placeholder para que no se mueva
-            self.solucion[2].setFixedSize(320, 240)
             # quitar el placeholder
             self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
             # añadir la grafica
@@ -217,7 +222,7 @@ class VentanaPrincipal(QMainWindow):
         else:
             # aqui lo inverso: se quita la grafica y se pone el placeholder
             self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
-            self.lado_derecho.addWidget(make_plot_placeholder())
+            self.lado_derecho.addWidget(Solver.create_plot_widget(None, None, None, True))
             self.mostrar_error_en_salida("Valores no válidos")
 
     def mostrar_error_en_salida(self, mensaje):
@@ -229,6 +234,8 @@ class VentanaPrincipal(QMainWindow):
             lineEdits.clear()
         for salida in self.salidas:
             salida.clear()
+        self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
+        self.lado_derecho.addWidget(Solver.create_plot_widget(None, None, None, True))
 
     def calculo_auto(self):
         if self.checkbox.isChecked():
@@ -243,6 +250,7 @@ class VentanaPrincipal(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
+    
     app.setStyleSheet(Path(os.path.join(basedir, "style.css")).read_text())
     window = VentanaPrincipal()
     window.show()

@@ -6,69 +6,32 @@ QMainWindow {
   font-size: 20px;
   font-weight: 600;
 }
-QCheckBox::indicator::unchecked {
-  image: url(res/check_box_unchecked.svg);
+QCheckBox::indicator
+{
+width : 40px;
+height : 40px;
 }
-
-QCheckBox::indicator::checked {
-  image: url(res/check_box_checked.svg);
+QToolTip {
+  background-color: #f3f3f3;
+  border: 2px solid #323f4f;
 }
 
 QPushButton {
   background-color: #1b2886;
   color: #fff;
 }
+
+QLineEdit, QPushButton,QToolTip {
+  border-radius: 5px;
+  padding: 3px;
+}
+
 QLineEdit {
   background-color: #f3f3f3;
   color: #323f4f;
   border: 2px solid #323f4f;
-  padding: 3px;
-  border-radius: 18px;
   /* max-width: 250px; */
 }
 QLineEdit:focus {
-  border-color: #8997ff;
-}
-
-QMessageBox {
-  background-color: #0a192f;
-}
-
-QPushButton#BotonCalcular {
-  border-style: outset;
-  border-radius: 12px;
-  border-width: 2px;
-  padding: 5px;
-  background-color: #20bf55;
-  border-color: #1c2b4f;
-  /* box-shadow: 0px 10px rgb(83, 179, 83); */
-}
-
-QLabel#LogoText {
-  font-size: 20pt;
-  background-color: #1c2b4f;
-  color: white;
-  margin: 0 auto;
-}
-QPushButton#BotonCalcular:disabled {
-  background-color: #a8b2d1;
-}
-
-#label_entrada,
-#label_salida {
-  font-size: 40px; /* Change this value to your desired font size */
-}
-#boton_ayuda {
-  background: transparent;
-  border: none;
-}
-#salidas {
-  font-size: 40px;
-  margin: 0%;
-  padding: 0%;
-}
-#titulos {
-  font-size: 30px;
-  margin: 0%;
-  padding: 0%;
+  border-style: dashed;
 }

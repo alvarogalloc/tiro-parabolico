@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['calculadora.py'],
+    ['app.py', "solver.py"],
     pathex=[],
     binaries=[],
     datas=[('style.css', '.'),('res', 'res')],
@@ -37,6 +37,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='res/icon.png'
 )
 coll = COLLECT(
     exe,

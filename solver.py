@@ -40,19 +40,20 @@ class Solver:
 
         return resultados
 
-    def create_plot_widget(self, posiciones_x, posiciones_y):
+    def create_plot_widget(self, posiciones_x, posiciones_y, empty = False):
         figure = plt.figure()
         canvas = FigureCanvas(figure)
         ax = figure.add_subplot(111)
-        ax.plot(posiciones_x, posiciones_y)
-        
-        # ax.xlabel("Posición en X (metros)")
-        # ax.ylabel("Posición en Y (metros)")
-        # ax.title("")
+        # ax.figure.set_figwidth
+        ax.figure.set_facecolor("#f3f3f3")
+        ax.patch.set_alpha(0.5)
+        ax.set_facecolor("#f3f3f3")
         ax.grid()
-        ax.scatter(self.coor_x, self.coor_y, color="red", s=3, marker="o")
         ax.axis("equal")
-        canvas.setStyleSheet("background-color:transparent;")
+        if not empty:
+            ax.plot(posiciones_x, posiciones_y)
+            if self.coor_x <= self.l:
+                ax.scatter(self.coor_x, self.coor_y, 6, color="red")
         canvas.draw()
         plt.close(figure)
         return canvas
@@ -70,28 +71,21 @@ class Solver:
             tiempo_total = self.l / velocidad_x
             Xr = resultado[1]
 
-            posiciones_x = []
-            posiciones_y = []
-            # Calcula la posición en incrementos de 0.05 segundos
-            tiempo = 0.0
-            obstaculo_encontrado = False
+            # Calcula la posición en incrementos de 0.02 segundos
+            tiempo_values = np.arange(0, tiempo_total + 0.02, 0.02)
 
-            while tiempo <= tiempo_total:
-                posicion_y = velocidad_y * tiempo + (-self.g * tiempo ** 2 / 2)
-                posicion_x = velocidad_x * tiempo
+            # Posiciones en x y y
+            posiciones_y = self.hi + velocidad_y * tiempo_values - (self.g * tiempo_values**2 / 2)
+            posiciones_x = velocidad_x * tiempo_values
 
-                # Verifica si la posición está dentro del rango del obstáculo
-                if (self.coor_x - 0.5 <= posicion_x <= self.coor_x + 0.5) and (
-                    self.coor_y - 0.5 <= posicion_y <= self.coor_y + 0.5
-                ):
-                    obstaculo_encontrado = True
-                    break
+            # Distancias del obstáculo a cada punto de la trayectoria
+            distances = np.sqrt((posiciones_x - self.coor_x)**2 + (posiciones_y - self.coor_y)**2)
 
-                posiciones_x.append(posicion_x)
-                posiciones_y.append(posicion_y)
-                tiempo += 0.0001
+            # encuentra el primer punto donde la distancia es menor o igual a 2, que es el radio del obstáculo
+            obstacle_index = np.where(distances <= 2)[0]
 
-            if not obstaculo_encontrado and Xr > 0:
+            # si no encontró un obstáculo, guarda el ángulo y la compresión funcional
+            if not obstacle_index.size > 0 and Xr > 0:
                 Xr = Xr * 100
                 Xr = round(Xr, 1)
                 posiciones.append([angulo, Xr])
@@ -105,7 +99,3 @@ class Solver:
             else []
         )
 
-    # Mostrar el gráfico
-
-
-# Ejemplo de uso
