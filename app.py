@@ -1,8 +1,10 @@
 import os
 
 from pathlib import Path
-from PyQt6 import QtCore
-from PyQt6.QtCore import QLine, QSize, Qt, QPoint
+import numpy
+import matplotlib
+import sys
+from PyQt6.QtCore import  QSize, Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QGridLayout,
@@ -11,11 +13,10 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
     QCheckBox,
-    QToolTip,
     QPushButton,
     QLineEdit,
 )
-from PyQt6.QtGui import QDoubleValidator, QIcon, QImage, QPixmap, QCursor
+from PyQt6.QtGui import QDoubleValidator, QIcon, QPixmap
 
 
 from solver import Solver
@@ -263,7 +264,7 @@ class VentanaPrincipal(QMainWindow):
 
 
 if __name__ == "__main__":
-    app = QApplication([])
+    app = QApplication(sys.argv)
 
     app.setStyleSheet(Path(os.path.join(basedir, "style.css")).read_text())
     window = VentanaPrincipal()
