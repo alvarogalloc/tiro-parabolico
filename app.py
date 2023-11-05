@@ -1,16 +1,15 @@
 import os
 
 from pathlib import Path
-import numpy
-import matplotlib
 import sys
-from PyQt6.QtCore import  QSize, Qt
+from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QGridLayout,
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QSlider,
     QWidget,
     QCheckBox,
     QPushButton,
@@ -32,7 +31,7 @@ def restringir_input(widget, aceptar_negativos=False):
     widget.setValidator(input_validator)
 
 
-def widget_con_ayuda(widget, help_msg):
+def decorar_con_ayuda(widget, help_msg):
     container = QWidget()
     layout = QHBoxLayout()
     layout.addWidget(widget)
@@ -56,12 +55,13 @@ class VentanaPrincipal(QMainWindow):
         layout_principal.setColumnStretch(0, 1)
         layout_principal.setColumnStretch(1, 1)
         lado_izquierdo = QGridLayout()
+        self.solver = Solver()
         lado_izquierdo.setColumnStretch(0, 1)
         lado_izquierdo.setColumnStretch(1, 1)
-        self.lado_derecho = QGridLayout()
-        self.lado_derecho.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lado_derecho = QGridLayout()
+        lado_derecho.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        for layout in [lado_izquierdo, self.lado_derecho]:
+        for layout in [lado_izquierdo, lado_derecho]:
             layout.setContentsMargins(0, 0, 0, 0)
 
         boton_reset = QPushButton("Resetear")
@@ -120,7 +120,7 @@ class VentanaPrincipal(QMainWindow):
             lado_izquierdo, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter
         )
         layout_principal.addLayout(
-            self.lado_derecho, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
+            lado_derecho, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
         )
         layout_principal.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label_entrada.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -137,7 +137,7 @@ class VentanaPrincipal(QMainWindow):
             entrada = QLineEdit()
             self.line_edits.append(entrada)
             lado_izquierdo.addWidget(
-                widget_con_ayuda(entrada, help_msgs[n]), grid_row, 2
+                decorar_con_ayuda(entrada, help_msgs[n]), grid_row, 2
             )
             entrada.setPlaceholderText(placeholders[n])
             if n not in [3, 4]:
@@ -166,7 +166,7 @@ class VentanaPrincipal(QMainWindow):
             self.line_edits.append(entrada_y)
             container_obstaculo.setLayout(container_obstaculo_layout)
             container_obstaculo.setFixedWidth(250)
-            return widget_con_ayuda(
+            return decorar_con_ayuda(
                 container_obstaculo,
                 "Coordenadas de un obstáculo\nen la trayectoria (x,y)",
             )
@@ -178,18 +178,42 @@ class VentanaPrincipal(QMainWindow):
             titulos = QLabel(output_nombres[m])
             self.labels_salida.append(titulos)
             titulos.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-            self.lado_derecho.addWidget(titulos)
+            lado_derecho.addWidget(titulos)
             self.salida = QLabel()
             self.salida.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             self.salidas.append(self.salida)
-            self.lado_derecho.addWidget(self.salida)
+            lado_derecho.addWidget(self.salida)
             self.salida.setObjectName("salidas")
             titulos.setObjectName("titulos")
 
-        self.lado_derecho.addWidget(Solver.hacer_grafica(None, None, None, True))
+        # solo añadir una vez esto, ya que solo se cambia la
+        # grafica no el widget
+        lado_derecho.addWidget(self.solver.canvas_plot)
+
+        container_obstaculo = QWidget()
+        container_obstaculo.setContentsMargins(100, 0, 100, 0)
+        container_obstaculo.setLayout(QHBoxLayout())
+        label_slider_obstaculo = QLabel(
+            f"Radio: {self.solver.distancia_minima_con_el_obstaculo}"
+        )
+        label_slider_obstaculo.setStyleSheet("font-size: 10px")
+        container_obstaculo.layout().addWidget(label_slider_obstaculo)
+        slider_obstaculo = QSlider(Qt.Orientation.Horizontal)
+        slider_obstaculo.setRange(1, 50)
+        slider_obstaculo.setFixedWidth(200)
+        slider_obstaculo.setValue(self.solver.distancia_minima_con_el_obstaculo)
+
+        def on_change_tolerancia(val):
+            self.solver.distancia_minima_con_el_obstaculo = val
+            label_slider_obstaculo.setText(f"Radio: {val}")
+            self.on_click_button()
+
+        slider_obstaculo.valueChanged.connect(on_change_tolerancia)
+        container_obstaculo.layout().addWidget(slider_obstaculo)
+        lado_derecho.addWidget(container_obstaculo)
 
         for entrada in self.line_edits:
-            entrada.textChanged.connect(self.calculo_auto)
+            entrada.editingFinished.connect(self.calculo_auto)
 
         container_footer = QWidget()
         container_footer.setContentsMargins(0, 0, 0, 0)
@@ -225,19 +249,14 @@ class VentanaPrincipal(QMainWindow):
             return
 
         valores = self.obtener_valores()
-        self.solucion = Solver(valores).solucion()
-        if len(self.solucion) == 3:
+        self.solver.set_valores(valores)
+        self.solucion = self.solver.solucion()
+        if len(self.solucion) == 2:
             self.salidas[0].setText(f"{self.solucion[0]}°")
             self.salidas[1].setText(f"{self.solucion[1]}%")
-            # hacer del mismo tamaño del plot_placeholder para que no se mueva
-            # quitar el placeholder
-            self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
-            # añadir la grafica
-            self.lado_derecho.addWidget(self.solucion[2])
         else:
             # aqui lo inverso: se quita la grafica y se pone el placeholder
-            self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
-            self.lado_derecho.addWidget(Solver.hacer_grafica(None, None, None, True))
+            self.solver.hacer_grafica(None, None, True)
             self.mostrar_error_en_salida("Valores no válidos")
 
     def mostrar_error_en_salida(self, mensaje):
@@ -249,8 +268,7 @@ class VentanaPrincipal(QMainWindow):
             lineEdits.clear()
         for salida in self.salidas:
             salida.clear()
-        self.lado_derecho.itemAt(4).widget().setParent(None)  # type:ignore
-        self.lado_derecho.addWidget(Solver.hacer_grafica(None, None, None, True))
+        self.solver.hacer_grafica(None, None, True)
 
     def calculo_auto(self):
         if self.checkbox.isChecked():

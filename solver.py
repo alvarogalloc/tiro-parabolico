@@ -1,31 +1,41 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as fig
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 
 
 class Solver:
-    def __init__(self, valores):
-        self.valores_entrada = valores
-        self.m = self.valores_entrada[0]
+    def __init__(self):
+        # crear plot sin nada, cambiar la figura cada vez que calcule
+        self.canvas_plot = FigureCanvas(plt.figure())
+        self.hacer_grafica(None, None, True)
+        self.distancia_minima_con_el_obstaculo = 1
+
+    def set_valores(self, valores_entrada):
+        self.m = valores_entrada[0]
         # agarrar valor absoluto
-        self.g = np.abs(self.valores_entrada[1])
-        self.k = self.valores_entrada[2]
-        self.hi = self.valores_entrada[4]
-        self.hf = self.valores_entrada[3]
-        self.l = self.valores_entrada[5]
-        self.coor_x = self.valores_entrada[6]
-        self.coor_y = self.valores_entrada[7]
+        self.g = np.abs(valores_entrada[1])
+        self.k = valores_entrada[2]
+        self.hi = valores_entrada[4]
+        self.hf = valores_entrada[3]
+        self.l = valores_entrada[5]
+        self.coor_x = valores_entrada[6]
+        self.coor_y = valores_entrada[7]
+
         self.Xr = None
-        self.used_ang = None
-        self.min_ang = -90
-        self.resultados_formulaV = self.posibles_soluciones()
+        # hacer que solo use angulos positivos cuando el objetivo esta
+        # mas alto que el disparador
+        if self.hf > self.hi:
+            self.min_ang = 0
+        else:
+            self.min_ang = -90
 
     def solucion_sin_obstaculo(self, angulo):
         denominator = ((self.hf - self.hi) - self.l * np.tan(np.radians(angulo))) * (
             -2 * np.cos(np.radians(angulo)) ** 2
         )
         if denominator == 0 or denominator < 0:
-            return  None, None
+            return None, None
         solution = (self.g * self.l ** 2) / denominator
         if not solution > 0:
             return None, None
@@ -34,76 +44,87 @@ class Solver:
             return None, None
         return xr, np.sqrt(solution)
 
-    def posibles_soluciones(self):
-        resultados = []
-        for ang in range(self.min_ang, 90):
-            xr, v = self.solucion_sin_obstaculo(ang)
-            if xr:
-                resultados.append([ang, xr, v])
-
-        return resultados
-
-    def hacer_grafica(self, posiciones_x, posiciones_y, empty=False):
-        figure = plt.figure()
-        canvas = FigureCanvas(figure)
-        ax = figure.add_subplot(111)
-        # ax.figure.set_figwidth
-        ax.figure.set_facecolor("#f3f3f3")
+    def hacer_grafica(self, v_inicial, angulo, empty=False):
+        # si ya se grafico alguna vez, borrarla
+        if self.canvas_plot.figure.axes:
+            self.canvas_plot.figure.delaxes(self.canvas_plot.figure.axes[0])
+        ax = self.canvas_plot.figure.add_subplot(111)
+        self.canvas_plot.figure.set_facecolor("#f3f3f3")
+        ax.clear()
         ax.patch.set_alpha(0.5)
         ax.set_facecolor("#f3f3f3")
         ax.grid()
         ax.axis("equal")
         if not empty:
+            v_inicial_x = v_inicial * np.cos(np.radians(angulo))
+            v_inicial_y = v_inicial * np.sin(np.radians(angulo))
+            valores_t = np.linspace(0, self.l / v_inicial_x, 20)
+            posiciones_y = (
+                self.hi + v_inicial_y * valores_t - (self.g * valores_t ** 2 / 2)
+            )
+            posiciones_x = v_inicial_x * valores_t
+
             ax.plot(posiciones_x, posiciones_y)
             if self.coor_x <= self.l:
-                ax.scatter(self.coor_x, self.coor_y, 6, color="red")
-        canvas.draw()
-        plt.close(figure)
-        return canvas
+                # poner un circulo rojo (vision de obstaculo)
+                # y en azul su caja de colision
+                obstaculo = fig.Circle(
+                    (self.coor_x, self.coor_y),
+                    self.distancia_minima_con_el_obstaculo,
+                    color="red",
+                )
+                ax.add_patch(obstaculo)
+        self.canvas_plot.draw()
+
+    # ahora si se grafica todo el tiro
+    def mostrar_tiro(self, v_inicial, angulo):
+        v_inicial_x = v_inicial * np.cos(np.radians(angulo))
+        v_inicial_y = v_inicial * np.sin(np.radians(angulo))
+        valores_t = np.linspace(0, self.l / v_inicial_x, 20)
+        posiciones_y = self.hi + v_inicial_y * valores_t - (self.g * valores_t ** 2 / 2)
+        posiciones_x = v_inicial_x * valores_t
+        plt.plot(posiciones_x, posiciones_y)
+        plt.scatter(self.coor_x, self.coor_y, 10, c="red")
+        plt.scatter(self.l, self.hf, 10, c="blue")
+        plt.show()
 
     def solucion(self):
-        posiciones = []  # Lista para almacenar las posiciones en función del tiempo
-        widget_of_the_plot = None
+        # usar angulo x angulo para quitar calculos innecesarios
+        for angulo in range(self.min_ang, 90):
+            xr, v_inicial = self.solucion_sin_obstaculo(angulo)
+            # en caso de solucion real
+            if not (xr and v_inicial):
+                continue
 
-        for resultado in self.resultados_formulaV:
-            angulo = resultado[0]
-            velocidad = resultado[2]
-            radianes = angulo * np.pi / 180
-            velocidad_x = velocidad * np.cos(radianes)
-            velocidad_y = velocidad * np.sin(radianes)
-            tiempo_total = self.l / velocidad_x
-            Xr = resultado[1]
-
-            # Calcula la posición en incrementos de 0.02 segundos
-            tiempo_values = np.arange(0, tiempo_total + 0.02, 0.02)
-
-            # Posiciones en x y y
+            # calcular un minimo valor de t
+            # cuando x en t es cercano a coor_x
+            v_inicial_x = v_inicial * np.cos(np.radians(angulo))
+            v_inicial_y = v_inicial * np.sin(np.radians(angulo))
+            min_t = (self.coor_x - self.distancia_minima_con_el_obstaculo) / (
+                v_inicial_x
+            )
+            max_t = (self.coor_x + self.distancia_minima_con_el_obstaculo) / (
+                v_inicial_x
+            )
+            # checar la distancia al obstaculo en este espacio
+            # para minimizar iteraciones (1000)
+            valores_t = np.linspace(min_t, max_t, 10)
             posiciones_y = (
-                self.hi
-                + velocidad_y * tiempo_values
-                - (self.g * tiempo_values ** 2 / 2)
+                self.hi + v_inicial_y * valores_t - (self.g * valores_t ** 2 / 2)
             )
-            posiciones_x = velocidad_x * tiempo_values
-
-            # Distancias del obstáculo a cada punto de la trayectoria
-            distances = np.sqrt(
-                (posiciones_x - self.coor_x) ** 2 + (posiciones_y - self.coor_y) ** 2
+            posiciones_x = v_inicial_x * valores_t
+            distancias_al_obstaculo = np.sqrt(
+                (self.coor_x - posiciones_x) ** 2 + (self.coor_y - posiciones_y) ** 2
             )
-
-            # encuentra el primer punto donde la distancia es menor o igual a 1, que es el radio del obstáculo
-            obstacle_index = np.where(distances <= 1)[0]
-
-            # si no encontró un obstáculo, guarda el ángulo y la compresión funcional
-            if not obstacle_index.size > 0 and Xr > 0:
-                Xr = Xr * 100
-                Xr = round(Xr, 1)
-                posiciones.append([angulo, Xr])
-                widget_of_the_plot = self.hacer_grafica(posiciones_x, posiciones_y)
-                break
-
-        # que regrese un angulo y compresion funcional ademas de la grafica del disparo
-        return (
-            [posiciones[0][0], posiciones[0][1], widget_of_the_plot]
-            if posiciones
-            else []
-        )
+            tiene_distancias_menores_a_uno = (
+                len(
+                    np.where(
+                        distancias_al_obstaculo < self.distancia_minima_con_el_obstaculo
+                    )[0]
+                )
+                > 0
+            )
+            if not tiene_distancias_menores_a_uno:
+                self.hacer_grafica(np.round(v_inicial, 2), angulo)
+                return [angulo, np.round(xr * 100, 2)]
+        return []
