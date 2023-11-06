@@ -47,8 +47,9 @@ def decorar_con_ayuda(widget, help_msg):
 class VentanaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon(os.path.join(basedir, "res/logo.ico")))
         self.setWindowTitle("Capicalc")
-        self.setWindowState(Qt.WindowState.WindowFullScreen)
+        self.setWindowState(Qt.WindowState.WindowMaximized)
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
         layout_principal = QGridLayout(central_widget)
