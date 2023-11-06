@@ -108,7 +108,7 @@ class Solver:
             )
             # checar la distancia al obstaculo en este espacio
             # para minimizar iteraciones (1000)
-            valores_t = np.linspace(min_t, max_t, 10)
+            valores_t = np.linspace(min_t, max_t, 1000)
             posiciones_y = (
                 self.hi + v_inicial_y * valores_t - (self.g * valores_t ** 2 / 2)
             )
